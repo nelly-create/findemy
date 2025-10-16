@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل الدخول | Findemy.dz</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .auth-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--primary-color), var(--light-accent));
+            padding: 40px 20px;
+        }
+        
+        .auth-card {
+            background: white;
+            padding: 50px 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            width: 100%;
+            max-width: 450px;
+            text-align: center;
+        }
+        
+        .auth-logo {
+            margin-bottom: 30px;
+        }
+        
+        .auth-logo img {
+            height: 80px;
+            margin-bottom: 15px;
+        }
+        
+        .auth-title {
+            color: var(--primary-color);
+            font-size: 2rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        
+        .auth-subtitle {
+            color: var(--secondary-color);
+            margin-bottom: 40px;
+            font-size: 1.1rem;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+            text-align: right;
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: var(--text-color);
+            margin-bottom: 8px;
+            display: block;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+        
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(139, 26, 59, 0.1);
+            outline: none;
+            background: white;
+        }
+        
+        .btn-auth {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.1rem;
+            border-radius: 12px;
+            margin-top: 10px;
+        }
+        
+        .auth-links {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        .auth-link {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+        
+        .auth-link:hover {
+            color: var(--light-accent);
+        }
+        
+        .back-home {
+            margin-top: 20px;
+        }
+        
+        .welcome-message {
+            background: linear-gradient(135deg, #d4edda, #c3e6cb);
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            text-align: center;
+            font-weight: 500;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .alert-error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .alert-warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <!-- المحتوى الرئيسي -->
+    <div class="auth-container">
+        <div class="auth-card">
+            <!-- الشعار -->
+            <div class="auth-logo">
+                <img src="{{ url_for('static', filename='img/LOGO B.png') }}" alt="Findemy.dz">
+                <h1 class="auth-title">تسجيل الدخول</h1>
+                <p class="auth-subtitle">ادخل إلى حسابك للمتابعة</p>
+            </div>
+
+            <!-- رسائل التنبيه -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'error' if category == 'error' else 'success' if category == 'success' else 'warning' }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <!-- نموذج تسجيل الدخول -->
+            <form method="POST" action="{{ url_for('login') }}">
+                <div class="form-group">
+                    <label class="form-label">البريد الإلكتروني</label>
+                    <input type="email" class="form-control" name="email" required 
+                           placeholder="أدخل بريدك الإلكتروني">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">كلمة المرور</label>
+                    <input type="password" class="form-control" name="password" required 
+                           placeholder="أدخل كلمة المرور">
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-auth">
+                    <i class="fas fa-sign-in-alt me-2"></i>تسجيل الدخول
+                </button>
+            </form>
+
+            <!-- الروابط -->
+            <div class="auth-links">
+                <p>ليس لديك حساب؟ 
+                    <a href="{{ url_for('register') }}" class="auth-link">إنشاء حساب جديد</a>
+                </p>
+                
+                <div class="back-home">
+                    <a href="{{ url_for('home') }}" class="auth-link">
+                        <i class="fas fa-arrow-right me-2"></i>العودة إلى الرئيسية
+                    </a>
+                </div>
+            </div>
+
+            <!-- رسالة ترحيبية -->
+            <div class="welcome-message" style="display: none;" id="welcomeMessage">
+                <i class="fas fa-heart fa-2x mb-3"></i>
+                <h4>شكراً لانضمامك إلى مجتمع القرّاء على Findemy.dz 💜</h4>
+                <p>نتمنى لك تجربة ممتعة معنا</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <script>
+        // إظهار رسالة الترحيب إذا كانت هناك رسالة نجاح
+        document.addEventListener('DOMContentLoaded', function() {
+            const successMessages = document.querySelectorAll('.alert-success');
+            if (successMessages.length > 0) {
+                document.getElementById('welcomeMessage').style.display = 'block';
+            }
+
+            // إضافة تأثيرات للعناصر
+            const formControls = document.querySelectorAll('.form-control');
+            formControls.forEach(control => {
+                control.addEventListener('focus', function() {
+                    this.parentElement.style.transform = 'translateY(-2px)';
+                });
+                
+                control.addEventListener('blur', function() {
+                    this.parentElement.style.transform = 'translateY(0)';
+                });
+            });
+        });
+    </script>
+</body>
+</html>

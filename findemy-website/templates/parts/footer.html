@@ -1,0 +1,56 @@
+    </main>
+
+    <!-- الفوتر -->
+    <footer class="main-footer">
+        <div class="footer-content">
+            <!-- الشعار -->
+            <div class="footer-logo">
+                <img src="{{ url_for('static', filename='img/LOGO B.png') }}" alt="Findemy.dz" class="logo-image">
+            </div>
+
+            <!-- روابط سريعة -->
+            <div class="footer-section">
+                <h3>روابط سريعة</h3>
+                <div class="quick-links">
+                    <a href="https://www.researchgate.net/login">ResearchGate</a>
+                    <a href="https://scholar.google.com/">Google Scholar</a>
+                    <a href="https://www.academia.edu/">Academia</a>
+                    <a href="https://www.sndl.cerist.dz/">SNDL</a>
+                    <a href="https://endnote.com/?srsltid=AfmBOorObtABQWqC6U9JAO_KC3TYkwGHBnJIJeL4LpXRDEtq27OQ4euC">EndNote</a>
+                </div>
+            </div>
+
+            <!-- تواصل معنا -->
+            <div class="footer-section">
+                <h3>تواصل معنا</h3>
+                <div class="contact-info">
+                    <p>📧 contact@findemy.dz</p>
+                    <p>📞 +213 XX XX XX XX</p>
+                    <a href="{{ url_for('about') }}">عن المنصة</a>
+                </div>
+            </div>
+
+            <!-- حسابات المستخدم -->
+            <div class="footer-section">
+                <h3>حسابك</h3>
+                <div class="user-links">
+                    {% if user_logged_in %}
+                        <a href="{{ url_for('logout') }}">تسجيل الخروج</a>
+                    {% else %}
+                        <a href="{{ url_for('register') }}">إنشاء حساب</a>
+                        <a href="{{ url_for('login') }}">تسجيل الدخول</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- حقوق النشر -->
+        <div class="copyright">
+            © 2025 Findemy.dz – جميع الحقوق محفوظة<br>
+            منصة تقدم خدمات المعلومات
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

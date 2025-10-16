@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>بيع كتاب مستعمل | Findemy.dz</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .sell-container {
+            max-width: 1000px; /* ✅ تغيير من 800px إلى 1000px */
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        .form-section {
+            background: var(--card-bg);
+            padding: 50px; /* ✅ زيادة padding */
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: var(--text-color);
+            margin-bottom: 10px; /* ✅ زيادة المسافة */
+            display: block;
+            font-size: 1.1rem; /* ✅ زيادة حجم الخط */
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 15px 20px; /* ✅ زيادة padding */
+            border: 2px solid #e9ecef;
+            border-radius: 10px; /* ✅ زيادة radius */
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+        
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(139, 26, 59, 0.1);
+            outline: none;
+            background: white;
+        }
+        
+        .commission-notice {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 10px;
+            padding: 20px; /* ✅ زيادة padding */
+            margin: 20px 0;
+            color: #856404;
+            font-size: 1rem;
+        }
+        
+        .terms-box {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 25px; /* ✅ زيادة padding */
+            margin: 25px 0;
+            max-height: 200px;
+            overflow-y: auto;
+            font-size: 1rem;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin: 25px 0;
+        }
+        
+        .checkbox-group input[type="checkbox"] {
+            transform: scale(1.2); /* ✅ تكبير Checkbox */
+            margin-top: 3px;
+        }
+        
+        .checkbox-group label {
+            font-size: 1.1rem; /* ✅ زيادة حجم نص الشروط */
+        }
+        
+        .success-message {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 30px; /* ✅ زيادة padding */
+            border-radius: 10px;
+            text-align: center;
+            margin: 20px 0;
+            font-size: 1.1rem;
+        }
+        
+        /* ✅ إضافة تنسيق للعناوين */
+        h2 {
+            font-size: 2.2rem !important;
+            margin-bottom: 40px !important;
+        }
+        
+        h3 {
+            font-size: 1.5rem !important;
+            margin-bottom: 25px !important;
+            padding-bottom: 15px !important;
+        }
+        
+        /* ✅ جعل الأزرار أكبر */
+        .btn-large {
+            padding: 18px 50px !important;
+            font-size: 1.2rem !important;
+            border-radius: 12px !important;
+        }
+        
+        /* ✅ تحسين المسافات بين الأقسام */
+        .form-section > h3 {
+            margin-top: 40px !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- القائمة الجانبية -->
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <h2><i class="fas fa-graduation-cap"></i> Findemy.dz</h2>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="{{ url_for('home') }}"><i class="fas fa-home"></i> الرئيسية</a></li>
+            <li><a href="{{ url_for('resources') }}"><i class="fas fa-book"></i> الموارد</a></li>
+            <li><a href="{{ url_for('sources') }}"><i class="fas fa-database"></i> المصادر العلمية</a></li>
+            <li><a href="{{ url_for('search') }}"><i class="fas fa-search"></i> البحث المتقدم</a></li>
+            <li><a href="{{ url_for('books') }}"><i class="fas fa-exchange-alt"></i> الكتب المستعملة</a></li>
+            <li><a href="{{ url_for('about') }}"><i class="fas fa-info-circle"></i> عن المنصة</a></li>
+            
+            <!-- رابط لوحة التحكم يظهر فقط للأدمن -->
+            {% if session.get('user_role') == 'admin' %}
+            <li><a href="{{ url_for('admin_dashboard') }}"><i class="fas fa-tachometer-alt"></i> لوحة التحكم</a></li>
+            {% endif %}
+            
+            {% if user_logged_in %}
+                <li><a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> تسجيل الخروج</a></li>
+            {% else %}
+                <li><a href="{{ url_for('login') }}"><i class="fas fa-sign-in-alt"></i> تسجيل الدخول</a></li>
+                <li><a href="{{ url_for('register') }}"><i class="fas fa-user-plus"></i> إنشاء حساب</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+
+    <!-- زر القائمة -->
+    <button class="menu-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- المحتوى الرئيسي -->
+    <div class="main-content">
+        <!-- قسم البطل -->
+        <section class="hero-section">
+            <div class="hero-overlay">
+                <div class="hero-container">
+                    <h1 class="hero-title">أعد الحياة لكتابك!</h1>
+                    <p class="hero-description">
+                        بع كتبك المستعملة وأعطِها حياة جديدة. دع فريق Findemy يتولى عملية البيع بالكامل
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- نموذج البيع -->
+        <div class="sell-container">
+            <div class="form-section">
+                <h2 style="color: var(--primary-color); margin-bottom: 30px; text-align: center;">
+                    <i class="fas fa-tag me-2"></i>نشر كتاب للبيع
+                </h2>
+
+                <div id="successMessage" class="success-message" style="display: none;">
+                    <i class="fas fa-check-circle fa-2x mb-3"></i>
+                    <h4>شكراً لانضمامك إلى مجتمع القرّاء على Findemy.dz 💜</h4>
+                    <p>تم إضافة الكتاب بنجاح وسيتم مراجعته من قبل الإدارة</p>
+                </div>
+
+                <form id="sellForm">
+                    <!-- معلومات الكتاب -->
+                    <h3 style="color: var(--primary-color); margin-bottom: 20px; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px;">
+                        <i class="fas fa-book me-2"></i>معلومات الكتاب
+                    </h3>
+
+                    <div class="form-group">
+                        <label class="form-label">عنوان الكتاب *</label>
+                        <input type="text" class="form-control" name="title" required placeholder="أدخل عنوان الكتاب">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">المؤلف *</label>
+                        <input type="text" class="form-control" name="author" required placeholder="أدخل اسم المؤلف">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">وصف الكتاب</label>
+                        <textarea class="form-control" name="description" rows="4" placeholder="صف حالة الكتاب ومحتواه..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">سعر البيع المطلوب (دج) *</label>
+                        <input type="number" class="form-control" name="price" required min="1" placeholder="أدخل السعر بالدينار الجزائري">
+                        <div class="commission-notice">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>ملاحظة:</strong> السعر الذي تُدخله هنا هو السعر الذي سيُعرض للمشترين.
+                            عند إتمام عملية البيع، تُخصم المنصة عمولة قدرها 15٪ من سعر البيع النهائي.
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">نوع الكتاب *</label>
+                        <select class="form-control" name="category" required>
+                            <option value="">اختر نوع الكتاب</option>
+                            <option value="أدب">أدب</option>
+                            <option value="علمي">علمي</option>
+                            <option value="تعليمي">تعليمي</option>
+                            <option value="ترفيهي">ترفيهي</option>
+                            <option value="ديني">ديني</option>
+                            <option value="تاريخي">تاريخي</option>
+                            <option value="فلسفة">فلسفة</option>
+                            <option value="أخرى">أخرى</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">حالة الكتاب *</label>
+                        <select class="form-control" name="condition" required>
+                            <option value="">اختر حالة الكتاب</option>
+                            <option value="جديد">جديد</option>
+                            <option value="جيد">جيد جداً</option>
+                            <option value="متوسط">متوسط</option>
+                            <option value="مستعمل">مستعمل</option>
+                        </select>
+                    </div>
+
+                    <!-- معلومات التسليم -->
+                    <h3 style="color: var(--primary-color); margin: 40px 0 20px 0; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px;">
+                        <i class="fas fa-truck me-2"></i>معلومات التسليم
+                    </h3>
+
+                    <div class="form-group">
+                        <label class="form-label">المدينة *</label>
+                        <input type="text" class="form-control" name="city" required placeholder="أدخل اسم المدينة">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">وقت التسليم *</label>
+                        <select class="form-control" name="delivery_time" required>
+                            <option value="">اختر وقت التسليم</option>
+                            <option value="خلال 24 ساعة">خلال 24 ساعة</option>
+                            <option value="خلال 48 ساعة">خلال 48 ساعة</option>
+                            <option value="خلال أسبوع">خلال أسبوع</option>
+                            <option value="أكثر من أسبوع">أكثر من أسبوع</option>
+                        </select>
+                    </div>
+
+                    <!-- شروط الخدمة -->
+                    <h3 style="color: var(--primary-color); margin: 40px 0 20px 0; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px;">
+                        <i class="fas fa-file-contract me-2"></i>شروط خدمة الوساطة
+                    </h3>
+
+                    <div class="terms-box">
+                        <p><strong>الشروط والأحكام:</strong></p>
+                        <ul style="padding-right: 20px;">
+                            <li>أوافق على أن تتولى المنصة عملية البيع بالكامل مقابل 15٪ عمولة من سعر البيع النهائي</li>
+                            <li>أتعهد بتسليم الكتاب عند وجود عميل</li>
+                            <li>لا تُعرض معلومات الاتصال مباشرة للمستخدمين الآخرين</li>
+                            <li>فريق Findemy يتولى التفاوض مع المشتري نيابةً عنك</li>
+                            <li>يمكنك سحب إعلانك في أي وقت</li>
+                            <li>نضمن حماية بياناتك الشخصية وفق سياسة الخصوصية</li>
+                        </ul>
+                    </div>
+
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="agreeTerms" required style="margin-top: 5px;">
+                        <label for="agreeTerms" style="font-weight: normal;">
+                            أوافق على شروط خدمة الوساطة المذكورة أعلاه *
+                        </label>
+                    </div>
+
+                    <!-- زر الإرسال -->
+                    <div style="text-align: center; margin-top: 30px;">
+                        <button type="submit" class="btn btn-primary btn-large" style="padding: 15px 40px; font-size: 1.1rem;">
+                            <i class="fas fa-paper-plane me-2"></i>نشر الكتاب للبيع
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- تذكير ترويجي -->
+            <div style="text-align: center; padding: 60px; background: linear-gradient(135deg, var(--primary-color), var(--light-accent)); color: rgb(172, 74, 74); border-radius: 20px;">
+                <i class="fas fa-heart fa-2x mb-3"></i>
+                <h4>كل كتاب تبيعه يساهم في استمرار رحلة المعرفة</h4>
+                <p>شارك في بناء مجتمع القرّاء ودع المعرفة تنتقل من قارئ إلى آخر</p>
+            </div>
+        </div>
+
+        <!-- الفوتر -->
+        <footer class="footer">
+            <div class="container">
+                <div class="footer-content">
+                    <div class="footer-brand">
+                        <img src="{{ url_for('static', filename='img/LOGO B.png') }}" alt="Findemy.dz" class="logo-img">
+                        <p class="footer-description">
+                            منصة تجمع كل ما يحتاجه الطالب والباحث في مكان واحد
+                        </p>
+                    </div>
+                    <div class="footer-links">
+                        <div class="footer-column">
+                            <h4>روابط سريعة</h4>
+                            <a href="https://www.researchgate.net/login" target="_blank"><i class="fas fa-external-link-alt"></i> ResearchGate</a>
+                            <a href="https://scholar.google.com/" target="_blank"><i class="fas fa-external-link-alt"></i> Google Scholar</a>
+                            <a href="https://www.academia.edu/" target="_blank"><i class="fas fa-external-link-alt"></i> Academia</a>
+                            <a href="https://www.sndl.cerist.dz/" target="_blank"><i class="fas fa-external-link-alt"></i> SNDL</a>
+                            <a href="https://endnote.com/" target="_blank"><i class="fas fa-external-link-alt"></i> EndNote</a>
+                        </div>
+                        <div class="footer-column">
+                            <h4>تواصل معنا</h4>
+                            <p><i class="fas fa-envelope"></i> contact@findemy.dz</p>
+                            <p><i class="fas fa-phone"></i> +213 XX XX XX XX</p>
+                        </div>
+                        <div class="footer-column">
+                            <h4>عن المنصة</h4>
+                            <a href="{{ url_for('about') }}"><i class="fas fa-info-circle"></i> عن المنصة</a>
+                            <a href="{{ url_for('register') }}"><i class="fas fa-user-plus"></i> إنشاء حساب</a>
+                            <a href="{{ url_for('login') }}"><i class="fas fa-sign-in-alt"></i> تسجيل الدخول</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="footer-bottom">
+                    <p>© 2025 Findemy.dz – جميع الحقوق محفوظة</p>
+                    <p>منصة تقدم خدمات المعلومات</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <script>
+        // إرسال نموذج البيع
+        document.getElementById('sellForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const submitBtn = this.querySelector('button[type="submit"]');
+            
+            try {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>جاري الإرسال...';
+                
+                const response = await fetch('/api/books/sell', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    // إظهار رسالة النجاح
+                    document.getElementById('successMessage').style.display = 'block';
+                    document.getElementById('sellForm').style.display = 'none';
+                    
+                    // إعادة التوجيه بعد 3 ثواني
+                    setTimeout(() => {
+                        window.location.href = "{{ url_for('books') }}";
+                    }, 3000);
+                } else {
+                    alert(result.error || 'حدث خطأ أثناء إضافة الكتاب');
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                alert('حدث خطأ في الاتصال بالخادم');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-paper-plane me-2"></i>نشر الكتاب للبيع';
+            }
+        });
+
+        // منع إدخال الأسعار السالبة
+        document.querySelector('input[name="price"]').addEventListener('input', function(e) {
+            if (this.value < 0) {
+                this.value = 1;
+            }
+        });
+    </script>
+</body>
+</html>

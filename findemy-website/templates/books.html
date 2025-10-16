@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الكتب المستعملة | Findemy.dz</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- القائمة الجانبية -->
+<nav class="sidebar">
+    <div class="sidebar-header">
+        <h2><i class="fas fa-graduation-cap"></i> Findemy.dz</h2>
+    </div>
+    <ul class="sidebar-menu">
+        <li><a href="{{ url_for('home') }}"><i class="fas fa-home"></i> الرئيسية</a></li>
+        <li><a href="{{ url_for('resources') }}"><i class="fas fa-book"></i> الموارد</a></li>
+        <li><a href="{{ url_for('sources') }}"><i class="fas fa-database"></i> المصادر العلمية</a></li>
+        <li><a href="{{ url_for('search') }}"><i class="fas fa-search"></i> البحث المتقدم</a></li>
+        <li><a href="{{ url_for('books') }}"><i class="fas fa-exchange-alt"></i> الكتب المستعملة</a></li>
+        <li><a href="{{ url_for('about') }}"><i class="fas fa-info-circle"></i> عن المنصة</a></li>
+        
+        <!-- رابط لوحة التحكم يظهر فقط للأدمن -->
+        {% if session.get('user_role') == 'admin' %}
+        <li><a href="{{ url_for('admin_dashboard') }}"><i class="fas fa-tachometer-alt"></i> لوحة التحكم</a></li>
+        {% endif %}
+        
+        {% if user_logged_in %}
+            <li><a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> تسجيل الخروج</a></li>
+        {% else %}
+            <li><a href="{{ url_for('login') }}"><i class="fas fa-sign-in-alt"></i> تسجيل الدخول</a></li>
+            <li><a href="{{ url_for('register') }}"><i class="fas fa-user-plus"></i> إنشاء حساب</a></li>
+        {% endif %}
+    </ul>
+</nav>
+
+    <!-- زر القائمة -->
+    <button class="menu-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- المحتوى الرئيسي -->
+    <main class="main-content">
+        <!-- قسم البطل -->
+        <section class="books-hero">
+            <div class="container">
+                <h1 class="hero-title">ساهم في دورة المعرفة</h1>
+                <p class="hero-description">
+                    دع الكتب تجد يدًا جديدة تقرؤها. كل كتاب مستعمل هو فرصة ذكية لقراءة أكثر بتكلفة أقل.
+                </p>
+                <div class="hero-actions">
+                    <a href="#books-catalog" class="btn btn-light btn-large">
+                        <i class="fas fa-search"></i> استكشف الكتب المعروضة
+                    </a>
+                    <a href="{{ url_for('sell_book') }}" class="btn btn-outline btn-large">
+                        <i class="fas fa-tag"></i> بع كتابك المستعمل
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- شريط البحث -->
+        <section class="search-section">
+            <div class="search-container">
+                <input type="text" 
+                       id="bookSearch" 
+                       class="search-input" 
+                       placeholder="ابحث باسم الكتاب أو المؤلف...">
+                <button onclick="searchBooks()" class="btn btn-primary">
+                    <i class="fas fa-search"></i> بحث
+                </button>
+            </div>
+        </section>
+
+        <!-- كتالوج الكتب -->
+        <section id="books-catalog" class="container" style="padding: 20px 0 80px;">
+            <div class="section-header">
+                <h2 class="section-title">اكتشف الكتب المستعملة</h2>
+                <p class="section-subtitle">عبر خدمة الوساطة الذكية من Findemy - نحن نتولى عملية الشراء والتواصل مع البائع نيابةً عنك</p>
+            </div>
+
+            <!-- شبكة الكتب -->
+            <div id="booksGrid" class="books-grid">
+                <!-- سيتم ملؤها بالجافاسكريبت -->
+            </div>
+
+            <!-- رسالة التحميل -->
+            <div id="loadingMessage" class="loading-message">
+                <i class="fas fa-spinner fa-spin fa-2x"></i>
+                <p style="margin-top: 15px;">جاري تحميل الكتب...</p>
+            </div>
+
+            <!-- رسالة عدم وجود كتب -->
+            <div id="noBooksMessage" class="no-books-message" style="display: none;">
+                <div class="no-books-content">
+                    <i class="fas fa-book-open no-books-icon"></i>
+                    <h3 style="color: var(--dark-color); margin-bottom: 15px;">لا توجد كتب معروضة حالياً</h3>
+                    <p style="color: var(--text-color); margin-bottom: 30px;">كن أول من يعرض كتبه للبيع ويساهم في بناء مجتمع المعرفة!</p>
+                    <a href="{{ url_for('sell_book') }}" class="btn btn-primary">
+                        <i class="fas fa-tag"></i> ابدأ البيع الآن
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- قسم بيع الكتب المحسن -->
+        <section class="sell-section">
+            <div class="container">
+                <div class="sell-container">
+                    <!-- المحتوى النصي -->
+                    <div class="sell-content">
+                        <h2>هل لديك كتب لا تحتاجها؟</h2>
+                        <h3>أعد الحياة لكتابك!</h3>
+                        <p>
+                            بع كتبك المستعملة وأعطِها حياة جديدة. دع فريق Findemy يتولى عملية البيع بالكامل 
+                            مقابل عمولة بسيطة <strong>15٪ فقط بعد إتمام البيع</strong>.
+                        </p>
+                        <a href="{{ url_for('sell_book') }}" class="btn btn-primary btn-large">
+                            <i class="fas fa-rocket"></i> ابدأ البيع الآن
+                        </a>
+                    </div>
+
+                    <!-- مزايا البيع -->
+                    <div class="sell-features">
+                        <div class="sell-icon">
+                            <i class="fas fa-hand-holding-usd"></i>
+                        </div>
+                        <h4>مزايا البيع مع Findemy</h4>
+                        <ul class="features-list">
+                            <li>
+                                <i class="fas fa-check"></i>
+                                <span>وساطة آمنة وموثوقة</span>
+                            </li>
+                            <li>
+                                <i class="fas fa-check"></i>
+                                <span>حماية كاملة لمعلوماتك</span>
+                            </li>
+                            <li>
+                                <i class="fas fa-check"></i>
+                                <span>تفاوض احترافي مع المشترين</span>
+                            </li>
+                            <li>
+                                <i class="fas fa-check"></i>
+                                <span>عمولة 15٪ فقط بعد البيع</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- الفوتر -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <img src="{{ url_for('static', filename='img/LOGO B.png') }}" alt="Findemy.dz" class="logo-img">
+                    <p class="footer-description">
+                        منصة تجمع كل ما يحتاجه الطالب والباحث في مكان واحد
+                    </p>
+                </div>
+                <div class="footer-links">
+                    <div class="footer-column">
+                        <h4>روابط سريعة</h4>
+                        <a href="https://www.researchgate.net/login" target="_blank"><i class="fas fa-external-link-alt"></i> ResearchGate</a>
+                        <a href="https://scholar.google.com/" target="_blank"><i class="fas fa-external-link-alt"></i> Google Scholar</a>
+                        <a href="https://www.academia.edu/" target="_blank"><i class="fas fa-external-link-alt"></i> Academia</a>
+                        <a href="https://www.sndl.cerist.dz/" target="_blank"><i class="fas fa-external-link-alt"></i> SNDL</a>
+                        <a href="https://endnote.com/" target="_blank"><i class="fas fa-external-link-alt"></i> EndNote</a>
+                    </div>
+                    <div class="footer-column">
+                        <h4>تواصل معنا</h4>
+                        <p><i class="fas fa-envelope"></i> contact@findemy.dz</p>
+                        <p><i class="fas fa-phone"></i> +213 XX XX XX XX</p>
+                    </div>
+                    <div class="footer-column">
+                        <h4>عن المنصة</h4>
+                        <a href="{{ url_for('about') }}"><i class="fas fa-info-circle"></i> عن المنصة</a>
+                        <a href="{{ url_for('register') }}"><i class="fas fa-user-plus"></i> إنشاء حساب</a>
+                        <a href="{{ url_for('login') }}"><i class="fas fa-sign-in-alt"></i> تسجيل الدخول</a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>© 2025 Findemy.dz – جميع الحقوق محفوظة</p>
+                <p>كل كتاب تشتريه أو تبيعه يساهم في استمرار رحلة المعرفة</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <script>
+        let booksData = [];
+
+        // عند تحميل الصفحة
+        document.addEventListener('DOMContentLoaded', function() {
+            loadBooks();
+            
+            // البحث عند الضغط على Enter
+            document.getElementById('bookSearch').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    searchBooks();
+                }
+            });
+        });
+
+        // تحميل الكتب من API
+        async function loadBooks() {
+            const loadingMessage = document.getElementById('loadingMessage');
+            const noBooksMessage = document.getElementById('noBooksMessage');
+            const booksGrid = document.getElementById('booksGrid');
+            
+            try {
+                loadingMessage.style.display = 'block';
+                noBooksMessage.style.display = 'none';
+                booksGrid.innerHTML = '';
+                
+                const response = await fetch('/api/books');
+                
+                if (!response.ok) {
+                    throw new Error('فشل في جلب البيانات من الخادم');
+                }
+                
+                booksData = await response.json();
+                
+                if (booksData.length === 0) {
+                    showNoBooks();
+                    return;
+                }
+                
+                displayBooks(booksData);
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showErrorMessage('حدث خطأ في تحميل الكتب. يرجى المحاولة مرة أخرى.');
+            } finally {
+                loadingMessage.style.display = 'none';
+            }
+        }
+
+        // عرض الكتب
+        function displayBooks(books) {
+            const booksGrid = document.getElementById('booksGrid');
+            booksGrid.innerHTML = '';
+            
+            books.forEach((book, index) => {
+                const bookCard = createBookCard(book);
+                booksGrid.appendChild(bookCard);
+                
+                // تأثير التتابع في الظهور
+                setTimeout(() => {
+                    bookCard.style.opacity = '1';
+                    bookCard.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+        }
+
+        // إنشاء بطاقة كتاب
+        function createBookCard(book) {
+            const card = document.createElement('div');
+            card.className = 'book-card';
+            card.style.cssText = `
+                opacity: 0;
+                transform: translateY(20px);
+                transition: all 0.6s ease;
+            `;
+
+            const statusClass = getStatusClass(book.condition);
+            const statusText = getStatusText(book.condition);
+
+            card.innerHTML = `
+                <div class="book-header">
+                    <h3 class="book-title">${book.title}</h3>
+                    <span class="book-status ${statusClass}">${statusText}</span>
+                </div>
+                
+                <p class="book-author">
+                    <i class="fas fa-user-edit"></i> ${book.author || 'غير محدد'}
+                </p>
+                
+                <div class="book-meta">
+                    <div class="meta-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>${book.city}</span>
+                    </div>
+                    <div class="meta-item">
+                        <i class="fas fa-book"></i>
+                        <span>${book.category || 'عام'}</span>
+                    </div>
+                </div>
+                
+                <p class="book-description">
+                    ${book.description || 'لا يوجد وصف متوفر للكتاب'}
+                </p>
+                
+                <div class="book-footer">
+                    <div class="book-price">${book.price} دج</div>
+                    <button onclick="requestPurchase(${book.id})" class="btn btn-primary">
+                        <i class="fas fa-shopping-cart"></i> طلب شراء
+                    </button>
+                </div>
+            `;
+
+            return card;
+        }
+
+        // البحث في الكتب
+        async function searchBooks() {
+            const searchTerm = document.getElementById('bookSearch').value;
+            
+            const loadingMessage = document.getElementById('loadingMessage');
+            const booksGrid = document.getElementById('booksGrid');
+            const noBooksMessage = document.getElementById('noBooksMessage');
+            
+            try {
+                loadingMessage.style.display = 'block';
+                booksGrid.innerHTML = '';
+                
+                const params = new URLSearchParams();
+                if (searchTerm) params.append('q', searchTerm);
+                
+                const response = await fetch(`/api/books/search?${params}`);
+                
+                if (!response.ok) {
+                    throw new Error('فشل في البحث');
+                }
+                
+                const filteredBooks = await response.json();
+                
+                if (filteredBooks.length === 0) {
+                    noBooksMessage.style.display = 'block';
+                } else {
+                    noBooksMessage.style.display = 'none';
+                    displayBooks(filteredBooks);
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showErrorMessage('حدث خطأ في البحث');
+            } finally {
+                loadingMessage.style.display = 'none';
+            }
+        }
+
+        // طلب شراء كتاب
+        function requestPurchase(bookId) {
+            {% if user_logged_in %}
+                window.location.href = `/books/buy/${bookId}`;
+            {% else %}
+                window.location.href = "{{ url_for('login') }}";
+            {% endif %}
+        }
+
+        // دوال مساعدة
+        function getStatusClass(condition) {
+            const statusMap = {
+                'جديد': 'status-new',
+                'جيد': 'status-good',
+                'متوسط': 'status-average',
+                'مستعمل': 'status-used'
+            };
+            return statusMap[condition] || 'status-average';
+        }
+
+        function getStatusText(condition) {
+            const textMap = {
+                'جديد': 'جديد',
+                'جيد': 'جيد جداً',
+                'متوسط': 'متوسط',
+                'مستعمل': 'مستعمل'
+            };
+            return textMap[condition] || condition;
+        }
+
+        function showNoBooks() {
+            document.getElementById('noBooksMessage').style.display = 'block';
+        }
+
+        function showErrorMessage(message) {
+            const booksGrid = document.getElementById('booksGrid');
+            booksGrid.innerHTML = `
+                <div class="error-message">
+                    <i class="fas fa-exclamation-triangle fa-3x"></i>
+                    <h3 style="margin: 20px 0;">${message}</h3>
+                    <button onclick="loadBooks()" class="btn btn-primary">إعادة المحاولة</button>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

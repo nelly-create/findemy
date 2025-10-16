@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Findemy.dz - منصة تجمع كل ما يحتاجه الطالب والباحث</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+</head>
+<body>
+    <!-- القائمة الجانبية المخفية -->
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <h2>Findemy.dz</h2>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="{{ url_for('home') }}">الرئيسية</a></li>
+            <li><a href="{{ url_for('resources') }}">الموارد</a></li>
+            <li><a href="{{ url_for('sources') }}">المصادر العلمية</a></li>
+            <li><a href="{{ url_for('search') }}">البحث المتقدم</a></li>
+            <li><a href="{{ url_for('books') }}">الكتب المستعملة</a></li>
+        </ul>
+    </nav>
+
+    <!-- المحتوى الرئيسي -->
+    <main class="main-content">
