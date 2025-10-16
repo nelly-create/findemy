@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, session, redirect, url_for, flash, jsonify
-import mysql.connector
+import pymysql
 from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
 import os
@@ -21,9 +21,16 @@ DB_CONFIG = {
 def get_db_connection():
     """الاتصال بقاعدة البيانات"""
     try:
-        conn = mysql.connector.connect(**DB_CONFIG)
+        conn = pymysql.connect(
+            host=DB_CONFIG['host'],
+            user=DB_CONFIG['user'],
+            password=DB_CONFIG['password'],
+            database=DB_CONFIG['database'],
+            charset=DB_CONFIG['charset'],
+            cursorclass=pymysql.cursors.DictCursor
+        )
         return conn
-    except mysql.connector.Error as err:
+    except Exception as err:
         print(f"❌ خطأ في الاتصال بقاعدة البيانات: {err}")
         return None
 
@@ -60,8 +67,6 @@ def home():
     """الصفحة الرئيسية"""
     return render_template('one.html', user_logged_in='user_id' in session)
 
-
-
 @app.route('/search')
 def search():
     """صفحة البحث المتقدم"""
@@ -75,7 +80,7 @@ def books():
     
     if conn:
         try:
-            cursor = conn.cursor(dictionary=True)
+            cursor = conn.cursor()
             cursor.execute('''
                 SELECT b.*, u.full_name as seller_name 
                 FROM books b 
@@ -121,7 +126,7 @@ def login():
             return render_template('login.html')
         
         try:
-            cursor = conn.cursor(dictionary=True)
+            cursor = conn.cursor()
             cursor.execute('SELECT * FROM users WHERE email = %s', (email,))
             user = cursor.fetchone()
             
@@ -225,11 +230,12 @@ def register():
             flash('تم إنشاء الحساب بنجاح! يمكنك تسجيل الدخول الآن.', 'success')
             return redirect(url_for('login'))
             
-        except mysql.connector.IntegrityError:
-            flash('هذا البريد الإلكتروني مسجل بالفعل', 'error')
         except Exception as e:
-            flash('حدث خطأ أثناء إنشاء الحساب', 'error')
-            print(f"خطأ: {e}")
+            if 'Duplicate entry' in str(e):
+                flash('هذا البريد الإلكتروني مسجل بالفعل', 'error')
+            else:
+                flash('حدث خطأ أثناء إنشاء الحساب', 'error')
+                print(f"خطأ: {e}")
         finally:
             cursor.close()
             conn.close()
@@ -253,12 +259,12 @@ def admin_dashboard():
     """لوحة تحكم الأدمن"""
     conn = get_db_connection()
     stats = {}
-    pending_books = []  # ⬅️ تهيئة المتغيرات
-    pending_orders = [] # ⬅️ تهيئة المتغيرات
+    pending_books = []
+    pending_orders = []
     
     if conn:
         try:
-            cursor = conn.cursor(dictionary=True)
+            cursor = conn.cursor()
             
             # الإحصائيات
             cursor.execute('SELECT COUNT(*) as count FROM users WHERE role = "user"')
@@ -283,7 +289,7 @@ def admin_dashboard():
             ''')
             pending_books = cursor.fetchall()
             
-            # طلبات الشراء الجديدة - الاستعلام المصحح
+            # طلبات الشراء الجديدة
             cursor.execute('''
                 SELECT o.*, b.title as book_title, 
                        o.buyer_name,
@@ -321,7 +327,7 @@ def get_books():
         return jsonify({'error': 'خطأ في الاتصال بقاعدة البيانات'}), 500
     
     try:
-        cursor = conn.cursor(dictionary=True)
+        cursor = conn.cursor()
         
         cursor.execute('''
             SELECT b.*, u.full_name as seller_name 
@@ -341,11 +347,6 @@ def get_books():
         print(f"خطأ في API الكتب: {e}")
         return jsonify({'error': 'حدث خطأ في الخادم'}), 500
 
-
-
-
-
-
 # =====================================================
 # API للموارد والمصادر العلمية
 # =====================================================
@@ -358,7 +359,7 @@ def get_resources():
         return jsonify({'error': 'خطأ في الاتصال بقاعدة البيانات'}), 500
     
     try:
-        cursor = conn.cursor(dictionary=True)
+        cursor = conn.cursor()
         cursor.execute('''
             SELECT * FROM resources 
             WHERE is_active = TRUE 
@@ -385,10 +386,9 @@ def search_resources():
         return jsonify({'error': 'خطأ في الاتصال'}), 500
     
     try:
-        cursor = conn.cursor(dictionary=True)
+        cursor = conn.cursor()
         
         if query:
-            # البحث في الحقول المختلفة
             cursor.execute('''
                 SELECT * FROM resources 
                 WHERE is_active = TRUE 
@@ -396,7 +396,6 @@ def search_resources():
                 ORDER BY name ASC
             ''', (f'%{query}%', f'%{query}%', f'%{query}%', f'%{query}%'))
         else:
-            # إذا لم يكن هناك بحث، ارجع كل البيانات
             cursor.execute('''
                 SELECT * FROM resources 
                 WHERE is_active = TRUE 
@@ -422,7 +421,7 @@ def get_scientific_sources():
         return jsonify({'error': 'خطأ في الاتصال بقاعدة البيانات'}), 500
     
     try:
-        cursor = conn.cursor(dictionary=True)
+        cursor = conn.cursor()
         cursor.execute('''
             SELECT * FROM scientific_sources 
             WHERE is_active = TRUE 
@@ -449,7 +448,7 @@ def search_sources():
         return jsonify({'error': 'خطأ في الاتصال'}), 500
     
     try:
-        cursor = conn.cursor(dictionary=True)
+        cursor = conn.cursor()
         
         if query:
             cursor.execute('''
@@ -476,7 +475,6 @@ def search_sources():
         print(f"❌ خطأ في بحث المصادر: {e}")
         return jsonify({'error': 'حدث خطأ في البحث'}), 500
  
-# =====================================================
 @app.route('/api/sources')
 def get_sources():
     """API لجلب المصادر العلمية"""
@@ -485,7 +483,7 @@ def get_sources():
         return jsonify({'error': 'خطأ في الاتصال بقاعدة البيانات'}), 500
     
     try:
-        cursor = conn.cursor(dictionary=True)
+        cursor = conn.cursor()
         cursor.execute('''
             SELECT * FROM scientific_sources 
             WHERE is_active = TRUE 
@@ -501,10 +499,9 @@ def get_sources():
     except Exception as e:
         print(f"❌ خطأ في API المصادر: {e}")
         return jsonify({'error': 'حدث خطأ في الخادم'}), 500
-    
 
 # =====================================================
-# طلبات الشراء - الإصدار المصحح
+# طلبات الشراء
 # =====================================================
 @app.route('/api/orders', methods=['POST'])
 @login_required
@@ -517,32 +514,27 @@ def create_order():
     try:
         data = request.get_json()
         
-        # البيانات الأساسية
         book_id = data.get('book_id')
         full_name = data.get('full_name')
         phone = data.get('phone')
         city = data.get('city')
         notes = data.get('notes', '')
         
-        # تحقق من البيانات
         if not book_id or not full_name or not phone or not city:
             return jsonify({'error': 'جميع الحقول مطلوبة'}), 400
         
-        cursor = conn.cursor(dictionary=True)
+        cursor = conn.cursor()
         
-        # جلب بيانات الكتاب
         cursor.execute('SELECT * FROM books WHERE id = %s', (book_id,))
         book = cursor.fetchone()
         
         if not book:
             return jsonify({'error': 'الكتاب غير موجود'}), 404
         
-        # ⚡ حساب السعر مع عمولة 15%
         book_price = float(book['price']) if book['price'] else 0
-        commission = book_price * 0.15  # ⬅️ 15% عمولة كما اخترت
+        commission = book_price * 0.15
         total_price = book_price + commission
         
-        # إدخال الطلب في قاعدة البيانات
         cursor.execute('''
             INSERT INTO orders (
                 book_id, seller_id, buyer_id, buyer_name, buyer_phone, 
@@ -598,7 +590,7 @@ def buy_book(book_id):
     
     if conn:
         try:
-            cursor = conn.cursor(dictionary=True)
+            cursor = conn.cursor()
             cursor.execute('''
                 SELECT b.*, u.full_name as seller_name 
                 FROM books b 
@@ -617,7 +609,7 @@ def buy_book(book_id):
         return redirect(url_for('books'))
     
     return render_template('buy-bk.html', book=book, user_logged_in=True)
-# صفحة الموارد
+
 @app.route('/resources')
 def resources():
     """صفحة الموارد - المكتبات والمستودعات"""
@@ -626,7 +618,7 @@ def resources():
     
     if conn:
         try:
-            cursor = conn.cursor(dictionary=True)
+            cursor = conn.cursor()
             cursor.execute('''
                 SELECT * FROM resources 
                 WHERE is_active = TRUE 
@@ -644,7 +636,7 @@ def resources():
     return render_template('resources.html', 
                          resources=resources_list, 
                          user_logged_in='user_id' in session)
-# صفحة المصادر 
+
 @app.route('/sources')
 def sources():
     """صفحة المصادر العلمية"""
@@ -653,7 +645,7 @@ def sources():
     
     if conn:
         try:
-            cursor = conn.cursor(dictionary=True)
+            cursor = conn.cursor()
             cursor.execute('''
                 SELECT * FROM scientific_sources 
                 WHERE is_active = TRUE 
@@ -671,6 +663,7 @@ def sources():
     return render_template('sources.html', 
                          sources=sources_list, 
                          user_logged_in='user_id' in session)
+
 # =====================================================
 # تشغيل التطبيق
 # =====================================================
