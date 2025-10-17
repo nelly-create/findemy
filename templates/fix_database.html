@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إصلاح قاعدة البيانات - Findemy.dz</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #7f8c8d;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+        
+        .icon {
+            font-size: 4rem;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 2rem;
+        }
+        
+        .message {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-weight: 500;
+        }
+        
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 12px 30px;
+            margin: 10px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background: var(--secondary-color);
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #6c757d;
+        }
+        
+        .status-list {
+            text-align: right;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 25px 0;
+        }
+        
+        .status-list h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+        }
+        
+        .status-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .status-item:last-child {
+            border-bottom: none;
+        }
+        
+        .status-icon {
+            font-size: 1.2rem;
+        }
+        
+        .success-icon { color: var(--success-color); }
+        .warning-icon { color: var(--warning-color); }
+        .danger-icon { color: var(--danger-color); }
+        
+        .instructions {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            text-align: right;
+        }
+        
+        .instructions h4 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="icon">
+            <i class="fas fa-database"></i>
+        </div>
+        
+        <h1>🔧 إصلاح قاعدة البيانات</h1>
+        <p style="color: var(--secondary-color); margin-bottom: 25px; font-size: 1.1rem;">
+            هذه الصفحة تقوم بإنشاء وإصلاح قاعدة البيانات تلقائياً
+        </p>
+        
+        {% if message %}
+            <div class="message {{ 'success' if 'نجاح' in message or '✅' in message else 'error' }}">
+                <i class="fas fa-{{ 'check-circle' if 'نجاح' in message or '✅' in message else 'exclamation-circle' }}"></i>
+                {{ message }}
+            </div>
+        {% else %}
+            <div class="message info">
+                <i class="fas fa-info-circle"></i>
+                انقر على الزر أدناه لبدء عملية إصلاح قاعدة البيانات
+            </div>
+        {% endif %}
+        
+        <div class="status-list">
+            <h3><i class="fas fa-tasks"></i> مهام الإصلاح</h3>
+            <div class="status-item">
+                <span>إنشاء جدول الموارد (40 جامعة)</span>
+                <i class="fas fa-check-circle success-icon status-icon"></i>
+            </div>
+            <div class="status-item">
+                <span>إنشاء جدول المصادر العلمية (25 مصدر)</span>
+                <i class="fas fa-check-circle success-icon status-icon"></i>
+            </div>
+            <div class="status-item">
+                <span>إنشاء جدول المستخدمين</span>
+                <i class="fas fa-check-circle success-icon status-icon"></i>
+            </div>
+            <div class="status-item">
+                <span>إنشاء جدول الكتب والطلبات</span>
+                <i class="fas fa-check-circle success-icon status-icon"></i>
+            </div>
+            <div class="status-item">
+                <span>إدخال البيانات الحقيقية</span>
+                <i class="fas fa-check-circle success-icon status-icon"></i>
+            </div>
+            <div class="status-item">
+                <span>إنشاء حساب الأدمن</span>
+                <i class="fas fa-check-circle success-icon status-icon"></i>
+            </div>
+        </div>
+        
+        <div class="instructions">
+            <h4><i class="fas fa-lightbulb"></i> تعليمات مهمة:</h4>
+            <p>• هذه العملية آمنة ولا تؤثر على البيانات الموجودة</p>
+            <p>• إذا كانت الجداول موجودة، سيتم التحقق منها فقط</p>
+            <p>• يمكنك تشغيل هذه الصفحة عدة مرات بدون مشاكل</p>
+        </div>
+        
+        <div style="margin: 30px 0;">
+            <a href="/admin/fix-database" class="btn btn-primary">
+                <i class="fas fa-tools"></i> إصلاح قاعدة البيانات الآن
+            </a>
+            <a href="/" class="btn btn-secondary">
+                <i class="fas fa-home"></i> العودة للرئيسية
+            </a>
+            <a href="/resources" class="btn" style="background: var(--success-color); color: white;">
+                <i class="fas fa-book"></i> التحقق من الموارد
+            </a>
+        </div>
+        
+        <div style="color: var(--secondary-color); font-size: 0.9rem; margin-top: 20px;">
+            <p><i class="fas fa-clock"></i> آخر تحديث: {{ now }}</p>
+        </div>
+    </div>
+</body>
+</html>
