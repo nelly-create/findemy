@@ -302,7 +302,16 @@
                 
                 <div style="margin-top: 10px; font-size: 0.8rem; color: var(--secondary-color);">
                     <i class="fas fa-calendar"></i> 
-                    تم الإضافة: {{ book.created_at.strftime('%Y-%m-%d %H:%M') if book.created_at else 'غير معروف' }}
+                    تم الإضافة: 
+                    {% if book.created_at %}
+                        {% if book.created_at is string %}
+                            {{ book.created_at }}
+                        {% else %}
+                            {{ book.created_at.strftime('%Y-%m-%d %H:%M') }}
+                        {% endif %}
+                    {% else %}
+                        غير معروف
+                    {% endif %}
                 </div>
             </div>
             {% endfor %}
@@ -322,6 +331,7 @@
         {% endif %}
     </div>
 </div>
+
             <!-- طلبات الشراء المعلقة -->
             <div id="pending-orders" class="admin-section">
                 <div class="section-header">
@@ -350,7 +360,17 @@
                                 </div>
                                 <div class="meta-item">
                                     <i class="fas fa-calendar"></i>
-                                    <span>{{ order.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                                    <span>
+                                        {% if order.created_at %}
+                                            {% if order.created_at is string %}
+                                                {{ order.created_at }}
+                                            {% else %}
+                                                {{ order.created_at.strftime('%Y-%m-%d %H:%M') }}
+                                            {% endif %}
+                                        {% else %}
+                                            غير معروف
+                                        {% endif %}
+                                    </span>
                                 </div>
                             </div>
                             
