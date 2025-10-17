@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إنشاء حساب جديد | Findemy.dz</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .auth-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--primary-color), var(--light-accent));
+            padding: 40px 20px;
+        }
+        
+        .auth-card {
+            background: white;
+            padding: 50px 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+        }
+        
+        .auth-logo {
+            margin-bottom: 30px;
+        }
+        
+        .auth-logo img {
+            height: 80px;
+            margin-bottom: 15px;
+        }
+        
+        .auth-title {
+            color: var(--primary-color);
+            font-size: 2rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        
+        .auth-subtitle {
+            color: var(--secondary-color);
+            margin-bottom: 40px;
+            font-size: 1.1rem;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+            text-align: right;
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: var(--text-color);
+            margin-bottom: 8px;
+            display: block;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+        
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(139, 26, 59, 0.1);
+            outline: none;
+            background: white;
+        }
+        
+        .btn-auth {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.1rem;
+            border-radius: 12px;
+            margin-top: 10px;
+        }
+        
+        .auth-links {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        .auth-link {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+        
+        .auth-link:hover {
+            color: var(--light-accent);
+        }
+        
+        .back-home {
+            margin-top: 20px;
+        }
+        
+        .welcome-section {
+            background: linear-gradient(135deg, #e7f3ff, #d4edff);
+            border: 1px solid #b3d9ff;
+            color: var(--primary-color);
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .password-requirements {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: var(--secondary-color);
+            text-align: right;
+        }
+        
+        .requirement {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 5px;
+        }
+        
+        .requirement.valid {
+            color: #28a745;
+        }
+        
+        .requirement.invalid {
+            color: #dc3545;
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            text-align: center;
+            font-weight: 500;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .alert-error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <!-- المحتوى الرئيسي -->
+    <div class="auth-container">
+        <div class="auth-card">
+            <!-- الشعار -->
+            <div class="auth-logo">
+                <img src="{{ url_for('static', filename='img/LOGO B.png') }}" alt="Findemy.dz">
+                <h1 class="auth-title">إنشاء حساب جديد</h1>
+                <p class="auth-subtitle">انضم إلى مجتمع findemy.dz</p>
+            </div>
+
+            <!-- رسالة ترحيبية -->
+            <div class="welcome-section">
+                <i class="fas fa-graduation-cap fa-2x mb-3"></i>
+                <h4>انضم إلى مجتمع المعرفة</h4>
+                <p>سجل الآن وابدأ رحلتك في اكتشاف وتبادل المعرفة</p>
+            </div>
+
+            <!-- رسائل التنبيه -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'error' if category == 'error' else 'success' }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <!-- نموذج إنشاء الحساب -->
+            <form method="POST" action="{{ url_for('register') }}" id="registerForm">
+                <div class="form-group">
+                    <label class="form-label">الاسم الكامل</label>
+                    <input type="text" class="form-control" name="full_name" required 
+                           placeholder="أدخل اسمك الكامل">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">البريد الإلكتروني</label>
+                    <input type="email" class="form-control" name="email" required 
+                           placeholder="أدخل بريدك الإلكتروني">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">كلمة المرور</label>
+                    <input type="password" class="form-control" name="password" required 
+                           id="password" placeholder="أدخل كلمة المرور (6 أحرف على الأقل)"
+                           minlength="6">
+                    
+                    <div class="password-requirements">
+                        <div class="requirement invalid" id="lengthReq">
+                            <i class="fas fa-circle" style="font-size: 0.6rem;"></i>
+                            <span>6 أحرف على الأقل</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">رقم الهاتف (اختياري)</label>
+                    <input type="tel" class="form-control" name="phone" 
+                           placeholder="أدخل رقم هاتفك">
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-auth" id="submitBtn">
+                    <i class="fas fa-user-plus me-2"></i>إنشاء الحساب
+                </button>
+            </form>
+
+            <!-- الروابط -->
+            <div class="auth-links">
+                <p>لديك حساب بالفعل؟ 
+                    <a href="{{ url_for('login') }}" class="auth-link">تسجيل الدخول</a>
+                </p>
+                
+                <div class="back-home">
+                    <a href="{{ url_for('home') }}" class="auth-link">
+                        <i class="fas fa-arrow-right me-2"></i>العودة إلى الرئيسية
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <script>
+        // التحقق من كلمة المرور
+        const passwordInput = document.getElementById('password');
+        const lengthReq = document.getElementById('lengthReq');
+        const submitBtn = document.getElementById('submitBtn');
+
+        passwordInput.addEventListener('input', function() {
+            const password = this.value;
+            
+            // التحقق من الطول
+            if (password.length >= 6) {
+                lengthReq.classList.remove('invalid');
+                lengthReq.classList.add('valid');
+                lengthReq.innerHTML = '<i class="fas fa-check-circle" style="font-size: 0.8rem;"></i><span>6 أحرف على الأقل ✓</span>';
+            } else {
+                lengthReq.classList.remove('valid');
+                lengthReq.classList.add('invalid');
+                lengthReq.innerHTML = '<i class="fas fa-circle" style="font-size: 0.6rem;"></i><span>6 أحرف على الأقل</span>';
+            }
+        });
+
+        // منع الإرسال إذا كانت كلمة المرور غير صالحة
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            const password = passwordInput.value;
+            
+            if (password.length < 6) {
+                e.preventDefault();
+                alert('كلمة المرور يجب أن تكون 6 أحرف على الأقل');
+                passwordInput.focus();
+            }
+        });
+
+        // إضافة تأثيرات للعناصر
+        document.addEventListener('DOMContentLoaded', function() {
+            const formControls = document.querySelectorAll('.form-control');
+            formControls.forEach(control => {
+                control.addEventListener('focus', function() {
+                    this.parentElement.style.transform = 'translateY(-2px)';
+                });
+                
+                control.addEventListener('blur', function() {
+                    this.parentElement.style.transform = 'translateY(0)';
+                });
+            });
+        });
+    </script>
+</body>
+</html>
