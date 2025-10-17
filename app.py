@@ -737,7 +737,6 @@ def logout():
 # =====================================================
 # لوحة تحكم الأدمن
 # =====================================================
-
 @app.route('/admin')
 @admin_required
 def admin_dashboard():
@@ -764,15 +763,16 @@ def admin_dashboard():
             cursor.execute('SELECT COUNT(*) FROM orders WHERE status = "pending"')
             stats['pending_orders'] = cursor.fetchone()[0]
             
-            # الكتب قيد الانتظار
+            # الكتب قيد الانتظار - إصلاح ✅
             cursor.execute('''
                 SELECT b.*, u.full_name as seller_name 
                 FROM books b 
-                JOIN users u ON b.seller_id = u.id 
+                LEFT JOIN users u ON b.seller_id = u.id 
                 WHERE b.status = "pending"
                 ORDER BY b.created_at DESC
             ''')
-            pending_books = cursor.fetchall()
+            pending_books = [dict(row) for row in cursor.fetchall()]
+            print(f"📋 لوحة التحكم: تم جلب {len(pending_books)} كتاب معلق")
             
             # طلبات الشراء الجديدة
             cursor.execute('''
@@ -785,10 +785,10 @@ def admin_dashboard():
                 WHERE o.status = "pending"
                 ORDER BY o.created_at DESC
             ''')
-            pending_orders = cursor.fetchall()
+            pending_orders = [dict(row) for row in cursor.fetchall()]
             
         except Exception as e:
-            print(f"خطأ في لوحة التحكم: {e}")
+            print(f"❌ خطأ في لوحة التحكم: {e}")
             flash('حدث خطأ في تحميل البيانات', 'error')
         finally:
             if conn:
@@ -798,7 +798,6 @@ def admin_dashboard():
                          stats=stats, 
                          pending_books=pending_books, 
                          pending_orders=pending_orders)
-
 # =====================================================
 # API للموارد والمصادر العلمية
 # =====================================================
@@ -1173,6 +1172,51 @@ def debug_books():
             print(f"❌ خطأ في تصحيح الكتب: {e}")
     
     return jsonify(debug_info)
+# =====================================================
+# 🔍 تصحيح الكتب المعلقة - أضف هذا المسار هنا
+# =====================================================
+
+@app.route('/debug/pending-books-detailed')
+@admin_required
+def debug_pending_books_detailed():
+    """تصحيح مفصل للكتب المعلقة"""
+    conn = get_db_connection()
+    debug_info = {}
+    
+    if conn:
+        try:
+            cursor = conn.cursor()
+            
+            # 1. استعلام الكتب المعلقة (بنفس طريقة admin_dashboard)
+            cursor.execute('''
+                SELECT b.*, u.full_name as seller_name 
+                FROM books b 
+                LEFT JOIN users u ON b.seller_id = u.id 
+                WHERE b.status = "pending"
+                ORDER BY b.created_at DESC
+            ''')
+            books_raw = cursor.fetchall()
+            debug_info['books_raw_count'] = len(books_raw)
+            debug_info['books_raw'] = [dict(row) for row in books_raw]
+            
+            # 2. استعلام بسيط للكتب المعلقة
+            cursor.execute('SELECT COUNT(*) as count FROM books WHERE status = "pending"')
+            simple_count = cursor.fetchone()
+            debug_info['simple_count'] = simple_count['count'] if simple_count else 0
+            
+            # 3. جميع الكتب بجميع الحالات
+            cursor.execute('SELECT id, title, status FROM books ORDER BY id DESC')
+            all_books = [dict(row) for row in cursor.fetchall()]
+            debug_info['all_books'] = all_books
+            
+            conn.close()
+            
+        except Exception as e:
+            debug_info['error'] = str(e)
+            print(f"❌ خطأ في تصحيح الكتب المعلقة: {e}")
+    
+    return jsonify(debug_info)
+
 
 @app.route('/api/books/sell', methods=['POST'])
 @login_required
