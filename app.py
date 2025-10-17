@@ -87,21 +87,22 @@ def init_real_data():
         ''')
         
         cursor.execute('''
-            CREATE TABLE IF NOT EXISTS books (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                title TEXT NOT NULL,
-                author TEXT NOT NULL,
-                seller_id INTEGER,
-                price REAL,
-                category TEXT,
-                condition TEXT,
-                description TEXT,
-                city TEXT,
-                status TEXT DEFAULT 'pending',
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (seller_id) REFERENCES users (id)
-            )
-        ''')
+         CREATE TABLE IF NOT EXISTS books (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          title TEXT NOT NULL,
+          author TEXT NOT NULL,
+          seller_id INTEGER,
+          price REAL,
+          category TEXT,
+          condition TEXT,
+          description TEXT,
+          city TEXT,
+          delivery_time TEXT,  -- ✅ أضف هذا العمود
+          status TEXT DEFAULT 'pending',
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (seller_id) REFERENCES users (id)
+           )
+       ''')
         
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS orders (
@@ -433,14 +434,33 @@ def init_real_data():
              'المجلات العلمية الأفريقية عبر الإنترنت', 'مجانية'),
         ]
  
-        # 4. التحقق من وجود البيانات أولاً
+              # 2. تحديث جدول الكتب إذا كان موجوداً بدون عمود delivery_time
+        try:
+            cursor.execute("PRAGMA table_info(books)")
+            columns = [column[1] for column in cursor.fetchall()]
+            
+            if 'delivery_time' not in columns:
+                print("🔄 جاري تحديث جدول الكتب بإضافة عمود delivery_time...")
+                cursor.execute('ALTER TABLE books ADD COLUMN delivery_time TEXT')
+                print("✅ تم إضافة عمود delivery_time إلى جدول الكتب")
+                
+        except Exception as e:
+            print(f"⚠️ ملاحظة في تحديث الجداول: {e}")
+
+        # 3. التحقق من وجود البيانات أولاً
         cursor.execute('SELECT COUNT(*) FROM resources')
         resource_count = cursor.fetchone()[0]
         
         cursor.execute('SELECT COUNT(*) FROM scientific_sources')
         source_count = cursor.fetchone()[0]
         
-        # 5. إدخال البيانات إذا كانت الجداول فارغة
+        cursor.execute('SELECT COUNT(*) FROM books')
+        books_count = cursor.fetchone()[0]
+        
+        cursor.execute('SELECT COUNT(*) FROM users')
+        users_count = cursor.fetchone()[0]
+        
+        # 4. إدخال البيانات إذا كانت الجداول فارغة
         if resource_count == 0:
             cursor.executemany('''
                 INSERT INTO resources (name, type, university, wilaya, url, description, repository_link, repository_name, search_keywords)
@@ -459,7 +479,7 @@ def init_real_data():
         else:
             print(f"📊 يوجد {source_count} مصدر علمي في قاعدة البيانات")
         
-        # 6. إضافة مستخدم أدمن إذا لم يكن موجوداً
+        # 5. إضافة مستخدم أدمن إذا لم يكن موجوداً
         cursor.execute('SELECT COUNT(*) FROM users WHERE email = ?', ('belloutinihel@gmail.com',))
         if cursor.fetchone()[0] == 0:
             hashed_password = generate_password_hash('nelly2002')
@@ -469,17 +489,23 @@ def init_real_data():
             ''', ('Nelly Create', 'belloutinihel@gmail.com', hashed_password, 'admin'))
             print("✅ تم إنشاء حساب الأدمن")
         
-        
+        # 6. عرض إحصائيات قاعدة البيانات
+        print("\n📊 إحصائيات قاعدة البيانات النهائية:")
+        print(f"   📚 الموارد: {resource_count} → {cursor.execute('SELECT COUNT(*) FROM resources').fetchone()[0]}")
+        print(f"   🔬 المصادر العلمية: {source_count} → {cursor.execute('SELECT COUNT(*) FROM scientific_sources').fetchone()[0]}")
+        print(f"   👥 المستخدمين: {users_count} → {cursor.execute('SELECT COUNT(*) FROM users').fetchone()[0]}")
+        print(f"   📖 الكتب: {books_count} → {cursor.execute('SELECT COUNT(*) FROM books').fetchone()[0]}")
         
         conn.commit()
         print("🎉 تم تحميل جميع البيانات الحقيقية بنجاح!")
         
     except Exception as e:
         print(f"❌ خطأ في تحميل البيانات: {e}")
+        import traceback
+        print(f"🔍 تفاصيل الخطأ: {traceback.format_exc()}")
     finally:
         if conn:
             conn.close()
-
 # =====================================================
 # ديكورات التحقق
 # =====================================================
@@ -1147,6 +1173,55 @@ def debug_books():
             print(f"❌ خطأ في تصحيح الكتب: {e}")
     
     return jsonify(debug_info)
+
+@app.route('/api/books/sell', methods=['POST'])
+@login_required
+def api_sell_book():
+    """API لبيع كتاب (لنموذج AJAX)"""
+    try:
+        # جلب البيانات من النموذج
+        title = request.form.get('title')
+        author = request.form.get('author')
+        price = request.form.get('price')
+        category = request.form.get('category')
+        condition = request.form.get('condition')
+        city = request.form.get('city')
+        description = request.form.get('description')
+        delivery_time = request.form.get('delivery_time')
+        
+        # التحقق من البيانات المطلوبة
+        if not all([title, author, price, category, condition, city, delivery_time]):
+            return jsonify({'error': 'يرجى ملء جميع الحقول المطلوبة'}), 400
+        
+        # التحقق من أن السعر رقم موجب
+        try:
+            price = float(price)
+            if price <= 0:
+                return jsonify({'error': 'السعر يجب أن يكون رقم موجب'}), 400
+        except ValueError:
+            return jsonify({'error': 'السعر يجب أن يكون رقماً صحيحاً'}), 400
+        
+        # حفظ الكتاب في قاعدة البيانات
+        conn = get_db_connection()
+        if not conn:
+            return jsonify({'error': 'خطأ في الاتصال بالخادم'}), 500
+        
+        cursor = conn.cursor()
+        cursor.execute('''
+            INSERT INTO books (title, author, price, category, condition, description, city, delivery_time, seller_id, status)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, "pending")
+        ''', (title, author, price, category, condition, description, city, delivery_time, session['user_id']))
+        
+        conn.commit()
+        book_id = cursor.lastrowid
+        conn.close()
+        
+        print(f"✅ تم إضافة كتاب جديد ID: {book_id}")
+        return jsonify({'success': True, 'message': 'تم إرسال طلب بيع الكتاب بنجاح!'})
+        
+    except Exception as e:
+        print(f"❌ خطأ في API بيع الكتاب: {e}")
+        return jsonify({'error': 'حدث خطأ في الخادم. يرجى المحاولة مرة أخرى.'}), 500
 
 
 # =====================================================
