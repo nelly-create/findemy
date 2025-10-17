@@ -40,6 +40,9 @@
         <i class="fas fa-bars"></i>
     </button>
 
+    <!-- طبقة شفافة لإغلاق القائمة -->
+    <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
     <!-- المحتوى الرئيسي -->
     <div class="main-content">
         <!-- قسم البطل -->
@@ -67,79 +70,80 @@
                 <div id="searchStats" style="text-align: center; color: var(--secondary-color); font-size: 0.9rem; margin-top: 10px;"></div>
             </div>
         </section>
-<!-- شبكة الموارد -->
-<section class="container" style="padding: 20px 20px 60px;">
-    {% if resources and resources|length > 0 %}
-        <!-- قائمة الموارد -->
-        <div class="resources-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 25px;">
-            {% for resource in resources %}
-            <div class="resource-card" style="background: var(--card-bg); padding: 25px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.08); border-top: 4px solid {% if resource.type == 'مكتبة' %}var(--primary-color){% else %}var(--success-color){% endif %};">
-                <div style="border-bottom: 2px solid #f0f0f0; padding-bottom: 15px; margin-bottom: 15px;">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
-                        <h3 style="color: var(--primary-color); font-size: 1.2rem; margin: 0; line-height: 1.4;">{{ resource.name }}</h3>
-                        <span style="background: {% if resource.type == 'مكتبة' %}var(--primary-color){% else %}var(--success-color){% endif %}; color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem;">
-                            {{ resource.type }}
-                        </span>
+
+        <!-- شبكة الموارد -->
+        <section class="container" style="padding: 20px 20px 60px;">
+            {% if resources and resources|length > 0 %}
+                <!-- قائمة الموارد -->
+                <div class="resources-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 25px;">
+                    {% for resource in resources %}
+                    <div class="resource-card" style="background: var(--card-bg); padding: 25px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.08); border-top: 4px solid {% if resource.type == 'مكتبة' %}var(--primary-color){% else %}var(--success-color){% endif %};">
+                        <div style="border-bottom: 2px solid #f0f0f0; padding-bottom: 15px; margin-bottom: 15px;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+                                <h3 style="color: var(--primary-color); font-size: 1.2rem; margin: 0; line-height: 1.4;">{{ resource.name }}</h3>
+                                <span style="background: {% if resource.type == 'مكتبة' %}var(--primary-color){% else %}var(--success-color){% endif %}; color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem;">
+                                    {{ resource.type }}
+                                </span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+                                <p style="color: var(--secondary-color); margin: 0; font-size: 0.9rem;">
+                                    <i class="fas fa-map-marker-alt"></i> {{ resource.wilaya }}
+                                </p>
+                                {% if resource.university %}
+                                <p style="color: var(--secondary-color); margin: 0; font-size: 0.9rem;">
+                                    <i class="fas fa-university"></i> {{ resource.university }}
+                                </p>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div style="margin-bottom: 20px;">
+                            <p style="color: var(--text-color); margin-bottom: 15px; line-height: 1.6; font-size: 0.95rem;">
+                                {{ resource.description or 'مورد أكاديمي من الجامعات الجزائرية' }}
+                            </p>
+                        </div>
+                        
+                        <div style="display: flex; gap: 10px;">
+                            {% if resource.url %}
+                            <a href="{{ resource.url }}" target="_blank" class="btn btn-primary" style="flex: 1; text-align: center; padding: 12px; font-size: 0.9rem; text-decoration: none;">
+                                <i class="fas fa-external-link-alt"></i> زيارة المكتبة
+                            </a>
+                            {% else %}
+                            <button class="btn" style="flex: 1; text-align: center; padding: 12px; font-size: 0.9rem; background: var(--secondary-color); color: white; border: none; cursor: not-allowed; opacity: 0.6;" disabled>
+                                <i class="fas fa-external-link-alt"></i> رابط غير متوفر
+                            </button>
+                            {% endif %}
+                            
+                            {% if resource.repository_link and resource.repository_link != '' and resource.repository_link != 'غير متوفر' %}
+                            <a href="{{ resource.repository_link }}" target="_blank" class="btn" style="flex: 1; text-align: center; padding: 12px; font-size: 0.9rem; background: var(--success-color); color: white; border: none; text-decoration: none;">
+                                <i class="fas fa-database"></i> زيارة المستودع
+                            </a>
+                            {% else %}
+                            <button class="btn" style="flex: 1; text-align: center; padding: 12px; font-size: 0.9rem; background: var(--secondary-color); color: white; border: none; cursor: not-allowed; opacity: 0.6;" disabled>
+                                <i class="fas fa-database"></i> لا يوجد مستودع
+                            </button>
+                            {% endif %}
+                        </div>
                     </div>
-                    <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
-                        <p style="color: var(--secondary-color); margin: 0; font-size: 0.9rem;">
-                            <i class="fas fa-map-marker-alt"></i> {{ resource.wilaya }}
-                        </p>
-                        {% if resource.university %}
-                        <p style="color: var(--secondary-color); margin: 0; font-size: 0.9rem;">
-                            <i class="fas fa-university"></i> {{ resource.university }}
-                        </p>
-                        {% endif %}
+                    {% endfor %}
+                </div>
+            {% else %}
+                <!-- رسالة عدم وجود بيانات -->
+                <div style="text-align: center; padding: 60px 20px; color: var(--secondary-color);">
+                    <i class="fas fa-database fa-3x" style="margin-bottom: 20px; opacity: 0.5;"></i>
+                    <h3 style="color: var(--secondary-color); margin-bottom: 15px;">جاري تحميل البيانات...</h3>
+                    <p>يتم الآن تحميل قاعدة البيانات للمرة الأولى، قد يستغرق ذلك بضع ثوانٍ</p>
+                    <div style="margin-top: 20px;">
+                        <button onclick="location.reload()" class="btn btn-primary" style="margin: 5px;">
+                            <i class="fas fa-redo"></i> إعادة تحميل
+                        </button>
+                        <a href="/" class="btn" style="margin: 5px; background: var(--secondary-color); color: white; text-decoration: none;">
+                            <i class="fas fa-home"></i> العودة للرئيسية
+                        </a>
                     </div>
                 </div>
-                
-                <div style="margin-bottom: 20px;">
-                    <p style="color: var(--text-color); margin-bottom: 15px; line-height: 1.6; font-size: 0.95rem;">
-                        {{ resource.description or 'مورد أكاديمي من الجامعات الجزائرية' }}
-                    </p>
-                </div>
-                
-                <div style="display: flex; gap: 10px;">
-                    {% if resource.url %}
-                    <a href="{{ resource.url }}" target="_blank" class="btn btn-primary" style="flex: 1; text-align: center; padding: 12px; font-size: 0.9rem; text-decoration: none;">
-                        <i class="fas fa-external-link-alt"></i> زيارة المكتبة
-                    </a>
-                    {% else %}
-                    <button class="btn" style="flex: 1; text-align: center; padding: 12px; font-size: 0.9rem; background: var(--secondary-color); color: white; border: none; cursor: not-allowed; opacity: 0.6;" disabled>
-                        <i class="fas fa-external-link-alt"></i> رابط غير متوفر
-                    </button>
-                    {% endif %}
-                    
-                    {% if resource.repository_link and resource.repository_link != '' and resource.repository_link != 'غير متوفر' %}
-                    <a href="{{ resource.repository_link }}" target="_blank" class="btn" style="flex: 1; text-align: center; padding: 12px; font-size: 0.9rem; background: var(--success-color); color: white; border: none; text-decoration: none;">
-                        <i class="fas fa-database"></i> زيارة المستودع
-                    </a>
-                    {% else %}
-                    <button class="btn" style="flex: 1; text-align: center; padding: 12px; font-size: 0.9rem; background: var(--secondary-color); color: white; border: none; cursor: not-allowed; opacity: 0.6;" disabled>
-                        <i class="fas fa-database"></i> لا يوجد مستودع
-                    </button>
-                    {% endif %}
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-    {% else %}
-        <!-- رسالة عدم وجود بيانات -->
-        <div style="text-align: center; padding: 60px 20px; color: var(--secondary-color);">
-            <i class="fas fa-database fa-3x" style="margin-bottom: 20px; opacity: 0.5;"></i>
-            <h3 style="color: var(--secondary-color); margin-bottom: 15px;">جاري تحميل البيانات...</h3>
-            <p>يتم الآن تحميل قاعدة البيانات للمرة الأولى، قد يستغرق ذلك بضع ثوانٍ</p>
-            <div style="margin-top: 20px;">
-                <button onclick="location.reload()" class="btn btn-primary" style="margin: 5px;">
-                    <i class="fas fa-redo"></i> إعادة تحميل
-                </button>
-                <a href="/" class="btn" style="margin: 5px; background: var(--secondary-color); color: white; text-decoration: none;">
-                    <i class="fas fa-home"></i> العودة للرئيسية
-                </a>
-            </div>
-        </div>
-    {% endif %}
-</section>
+            {% endif %}
+        </section>
 
         <!-- الفوتر -->
         <footer class="footer">
@@ -181,40 +185,101 @@
         </footer>
     </div>
 
-   <script>
-// دالة إظهار/إخفاء القائمة الجانبية
-function toggleSidebar() {
-    console.log('تم النقر على زر القائمة');
-    const sidebar = document.querySelector('.sidebar');
-    const mainContent = document.querySelector('.main-content');
-    
-    if (sidebar && mainContent) {
-        sidebar.classList.toggle('active');
-        if (window.innerWidth <= 992) {
-            mainContent.classList.toggle('sidebar-active');
+    <style>
+    /* إصلاح القائمة الجانبية للشاشات الصغيرة */
+    @media (max-width: 992px) {
+        .sidebar {
+            position: fixed;
+            top: 0;
+            right: -300px;
+            width: 280px;
+            height: 100%;
+            background-color: #2c3e50;
+            transition: right 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .sidebar.active {
+            right: 0;
+        }
+        
+        .menu-toggle {
+            display: flex !important;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            width: 40px;
+            height: 40px;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 1100;
+        }
+        
+        .main-content {
+            margin-right: 0 !important;
+        }
+        
+        /* طبقة شفافة لإغلاق القائمة */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+        }
+        
+        .sidebar.active ~ .sidebar-overlay {
+            display: block;
         }
     }
-}
 
-// تهيئة عند تحميل الصفحة
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('صفحة الموارد محملة');
-    
-    // إغلاق القائمة عند النقر على رابط
-    const sidebarLinks = document.querySelectorAll('.sidebar-menu a');
-    sidebarLinks.forEach(link => {
-        link.addEventListener('click', function() {
-            if (window.innerWidth <= 992) {
-                const sidebar = document.querySelector('.sidebar');
-                const mainContent = document.querySelector('.main-content');
-                if (sidebar && mainContent) {
-                    sidebar.classList.remove('active');
-                    mainContent.classList.remove('sidebar-active');
+    /* إخفاء زر القائمة في الشاشات الكبيرة */
+    @media (min-width: 993px) {
+        .menu-toggle {
+            display: none !important;
+        }
+        
+        .sidebar-overlay {
+            display: none !important;
+        }
+    }
+    </style>
+
+    <script>
+    // دالة إظهار/إخفاء القائمة الجانبية
+    function toggleSidebar() {
+        console.log('تم النقر على زر القائمة');
+        const sidebar = document.querySelector('.sidebar');
+        
+        if (sidebar) {
+            sidebar.classList.toggle('active');
+        }
+    }
+
+    // إغلاق القائمة عند النقر على الروابط
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('صفحة الموارد محملة');
+        
+        const sidebarLinks = document.querySelectorAll('.sidebar-menu a');
+        sidebarLinks.forEach(link => {
+            link.addEventListener('click', function() {
+                if (window.innerWidth <= 992) {
+                    const sidebar = document.querySelector('.sidebar');
+                    if (sidebar) {
+                        sidebar.classList.remove('active');
+                    }
                 }
-            }
+            });
         });
     });
-});
-</script> 
+    </script>
 </body>
 </html>
