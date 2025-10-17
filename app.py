@@ -1426,6 +1426,39 @@ def create_order():
             'success': False, 
             'error': 'حدث خطأ في إنشاء طلب الشراء. يرجى المحاولة مرة أخرى.'
         }), 500
+
+
+@app.route('/debug/books-status')
+def debug_books_status():
+    """تصحيح حالة الكتب"""
+    conn = get_db_connection()
+    debug_info = {}
+    
+    if conn:
+        try:
+            cursor = conn.cursor()
+            
+            # جميع الكتب مع حالتها
+            cursor.execute('''
+                SELECT b.id, b.title, b.status, b.seller_id, u.full_name as seller_name
+                FROM books b 
+                LEFT JOIN users u ON b.seller_id = u.id
+                ORDER BY b.id DESC
+            ''')
+            all_books = cursor.fetchall()
+            debug_info['all_books'] = [dict(row) for row in all_books]
+            
+            # إحصائيات الحالات
+            cursor.execute('SELECT status, COUNT(*) as count FROM books GROUP BY status')
+            status_counts = cursor.fetchall()
+            debug_info['status_counts'] = [dict(row) for row in status_counts]
+            
+            conn.close()
+            
+        except Exception as e:
+            debug_info['error'] = str(e)
+    
+    return jsonify(debug_info)
 # =====================================================
 # تشغيل التطبيق
 # =====================================================
