@@ -11,14 +11,19 @@ app.secret_key = 'findemy-v2-secret-key-2024'
 
 # إعدادات قاعدة البيانات SQLite
 def get_db_connection():
-    """الاتصال بقاعدة البيانات SQLite"""
+    """الاتصال بقاعدة البيانات SQLite - إصدار متوافق مع Render"""
     try:
-        # إنشاء مجلد data إذا لم يكن موجوداً
-        if not os.path.exists('data'):
-            os.makedirs('data')
+        # على Render، استخدم المسار المطلق
+        if 'RENDER' in os.environ:
+            db_path = '/var/data/findemy.db'
+        else:
+            # للتطوير المحلي
+            if not os.path.exists('data'):
+                os.makedirs('data')
+            db_path = 'data/findemy.db'
             
-        conn = sqlite3.connect('data/findemy.db')
-        conn.row_factory = sqlite3.Row  # للحصول على النتائج كـ dictionary
+        conn = sqlite3.connect(db_path)
+        conn.row_factory = sqlite3.Row
         return conn
     except Exception as err:
         print(f"❌ خطأ في الاتصال بقاعدة البيانات: {err}")
@@ -53,7 +58,6 @@ def init_real_data():
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         ''')
-        
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS scientific_sources (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -426,7 +430,7 @@ def init_real_data():
             ('AJOL أفريقيا', 'https://www.ajol.info/', 'إضافية',
              'المجلات العلمية الأفريقية عبر الإنترنت', 'مجانية'),
         ]
-        
+ 
         # 4. التحقق من وجود البيانات أولاً
         cursor.execute('SELECT COUNT(*) FROM resources')
         resource_count = cursor.fetchone()[0]
@@ -463,6 +467,8 @@ def init_real_data():
             ''', ('Nelly Create', 'belloutinihel@gmail.com', hashed_password, 'admin'))
             print("✅ تم إنشاء حساب الأدمن")
         
+        
+        
         conn.commit()
         print("🎉 تم تحميل جميع البيانات الحقيقية بنجاح!")
         
@@ -495,6 +501,37 @@ def admin_required(f):
             return redirect(url_for('home'))
         return f(*args, **kwargs)
     return decorated_function
+
+# =====================================================
+# تهيئة قاعدة البيانات عند بدء التشغيل
+# =====================================================
+
+@app.before_first_request
+def initialize_database():
+    """تهيئة قاعدة البيانات قبل أول طلب"""
+    print("🔄 بدء تهيئة قاعدة البيانات...")
+    init_real_data()
+
+# بديل إذا لم يعمل before_first_request
+@app.before_request
+def check_database():
+    """التحقق من قاعدة البيانات قبل كل طلب (للإصلاح المؤقت)"""
+    try:
+        conn = get_db_connection()
+        if conn:
+            cursor = conn.cursor()
+            # محاولة استعلام بسيط للتحقق من وجود الجداول
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='resources'")
+            table_exists = cursor.fetchone()
+            conn.close()
+            
+            if not table_exists:
+                print("⚠️ الجداول غير موجودة، جاري إنشاؤها...")
+                init_real_data()
+    except Exception as e:
+        print(f"❌ خطأ في التحقق من قاعدة البيانات: {e}")
+        # محاولة إنشاء الجداول مرة أخرى
+        init_real_data()
 
 # =====================================================
 # الصفحات العامة
@@ -975,9 +1012,6 @@ def buy_book(book_id):
 # =====================================================
 
 if __name__ == '__main__':
-    # تحميل البيانات عند بدء التشغيل
-    init_real_data()
-    
     print("🚀 بدء تشغيل Findemy.dz الإصدار الجديد...")
     print("📍 العنوان: http://localhost:5001")
     app.run(debug=True, host='0.0.0.0', port=5001)
