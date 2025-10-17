@@ -763,32 +763,42 @@ def admin_dashboard():
             cursor.execute('SELECT COUNT(*) FROM orders WHERE status = "pending"')
             stats['pending_orders'] = cursor.fetchone()[0]
             
-            # الكتب قيد الانتظار - إصلاح ✅
-            cursor.execute('''
-                SELECT b.*, u.full_name as seller_name 
-                FROM books b 
-                LEFT JOIN users u ON b.seller_id = u.id 
-                WHERE b.status = "pending"
-                ORDER BY b.created_at DESC
-            ''')
-            pending_books = [dict(row) for row in cursor.fetchall()]
-            print(f"📋 لوحة التحكم: تم جلب {len(pending_books)} كتاب معلق")
+            # الكتب قيد الانتظار - إصلاح آمن
+            try:
+                cursor.execute('''
+                    SELECT b.*, u.full_name as seller_name 
+                    FROM books b 
+                    LEFT JOIN users u ON b.seller_id = u.id 
+                    WHERE b.status = "pending"
+                    ORDER BY b.created_at DESC
+                ''')
+                pending_books_result = cursor.fetchall()
+                pending_books = [dict(row) for row in pending_books_result]
+                print(f"📋 لوحة التحكم: تم جلب {len(pending_books)} كتاب معلق")
+            except Exception as books_error:
+                print(f"⚠️ خطأ في جلب الكتب المعلقة: {books_error}")
+                pending_books = []
             
-            # طلبات الشراء الجديدة
-            cursor.execute('''
-                SELECT o.*, b.title as book_title, 
-                       o.buyer_name,
-                       u.full_name as seller_name
-                FROM orders o
-                JOIN books b ON o.book_id = b.id
-                JOIN users u ON b.seller_id = u.id
-                WHERE o.status = "pending"
-                ORDER BY o.created_at DESC
-            ''')
-            pending_orders = [dict(row) for row in cursor.fetchall()]
+            # طلبات الشراء الجديدة - إصلاح آمن
+            try:
+                cursor.execute('''
+                    SELECT o.*, b.title as book_title, 
+                           o.buyer_name,
+                           u.full_name as seller_name
+                    FROM orders o
+                    JOIN books b ON o.book_id = b.id
+                    JOIN users u ON b.seller_id = u.id
+                    WHERE o.status = "pending"
+                    ORDER BY o.created_at DESC
+                ''')
+                pending_orders_result = cursor.fetchall()
+                pending_orders = [dict(row) for row in pending_orders_result]
+            except Exception as orders_error:
+                print(f"⚠️ خطأ في جلب طلبات الشراء: {orders_error}")
+                pending_orders = []
             
         except Exception as e:
-            print(f"❌ خطأ في لوحة التحكم: {e}")
+            print(f"❌ خطأ عام في لوحة التحكم: {e}")
             flash('حدث خطأ في تحميل البيانات', 'error')
         finally:
             if conn:
