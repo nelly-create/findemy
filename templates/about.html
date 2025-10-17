@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>عن المنصة | Findemy.dz</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- القائمة الجانبية -->
+   
+<nav class="sidebar">
+    <div class="sidebar-header">
+        <h2><i class="fas fa-graduation-cap"></i> Findemy.dz</h2>
+    </div>
+    <ul class="sidebar-menu">
+        <li><a href="{{ url_for('home') }}"><i class="fas fa-home"></i> الرئيسية</a></li>
+        <li><a href="{{ url_for('resources') }}"><i class="fas fa-book"></i> الموارد</a></li>
+        <li><a href="{{ url_for('sources') }}"><i class="fas fa-database"></i> المصادر العلمية</a></li>
+        <li><a href="{{ url_for('search') }}"><i class="fas fa-search"></i> البحث المتقدم</a></li>
+        <li><a href="{{ url_for('books') }}"><i class="fas fa-exchange-alt"></i> الكتب المستعملة</a></li>
+        <li><a href="{{ url_for('about') }}"><i class="fas fa-info-circle"></i> عن المنصة</a></li>
+        
+        <!-- رابط لوحة التحكم يظهر فقط للأدمن -->
+        {% if session.get('user_role') == 'admin' %}
+        <li><a href="{{ url_for('admin_dashboard') }}"><i class="fas fa-tachometer-alt"></i> لوحة التحكم</a></li>
+        {% endif %}
+        
+        {% if user_logged_in %}
+            <li><a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> تسجيل الخروج</a></li>
+        {% else %}
+            <li><a href="{{ url_for('login') }}"><i class="fas fa-sign-in-alt"></i> تسجيل الدخول</a></li>
+            <li><a href="{{ url_for('register') }}"><i class="fas fa-user-plus"></i> إنشاء حساب</a></li>
+        {% endif %}
+    </ul>
+</nav>
+
+    <!-- زر القائمة -->
+    <button class="menu-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- المحتوى الرئيسي -->
+    <main class="main-content">
+        <!-- قسم البطل -->
+        <section class="page-hero">
+            <div class="page-hero-content">
+                <div class="hero-logo">
+                    <div class="logo-display">
+                        <!-- اللوجو مع بديل إذا لم يظهر -->
+                        <img src="{{ url_for('static', filename='img/LOGO B.png') }}" alt="Findemy.dz" 
+                             onerror="this.style.display='none'; document.getElementById('logoFallback').style.display='block';">
+                        <div id="logoFallback" class="logo-fallback" style="display: none;">
+                            FINDEMY.DZ
+                        </div>
+                    </div>
+                    <div class="hero-text">
+                        <div class="hero-tagline">FIND-EMY DZ</div>
+                        <div class="hero-slogan">EASY SEEK</div>
+                    </div>
+                </div>
+                <!-- تم إزالة أيقونة القبعة -->
+                <h1>عن Findemy.dz</h1>
+                <p>منصة أكاديمية جزائرية تجمع كل ما يحتاجه الطالب والباحث في مكان واحد</p>
+            </div>
+        </section>
+
+        <!-- محتوى الصفحة -->
+        <div class="about-container">
+            <!-- قسم المقدمة -->
+            <div class="about-section">
+                <h2 class="section-title"><i class="fas fa-info-circle"></i>من نحن؟</h2>
+                <p style="font-size: 1.1rem; line-height: 1.8; color: var(--text-color);">
+                    Findemy.dz هي منصة أكاديمية جزائرية تجمع كل ما يحتاجه الطالب والباحث في مكان واحد. 
+                    نوفر خدمات معلوماتية ذكية تسهّل عليك الوصول إلى المعرفة والموارد التعليمية.
+                </p>
+                
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <h3>ابحث في المكتبات الجامعية</h3>
+                        <p>ابحث في المكتبات الجامعية والمستودعات الرقمية الجزائرية بسهولة</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-globe"></i>
+                        </div>
+                        <h3>اكتشف المصادر العالمية</h3>
+                        <p>اكتشف قواعد البيانات والمصادر الأكاديمية العالمية المتنوعة</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-exchange-alt"></i>
+                        </div>
+                        <h3>تبادل الكتب المستعملة</h3>
+                        <p>بع واشترِ كتبًا مستعملة بسهولة وبأمان عبر وساطتنا الذكية</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-tools"></i>
+                        </div>
+                        <h3>أدوات بحث ذكية</h3>
+                        <p>استخدم أدواتنا الذكية لتبسيط عملية البحث والوصول إلى المعلومة</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- قسم كيفية عمل نظام الكتب -->
+            <div class="about-section">
+                <h2 class="section-title"><i class="fas fa-cogs"></i>كيف يعمل نظام الكتب المستعملة؟</h2>
+                <p style="font-size: 1.1rem; line-height: 1.8; color: var(--text-color); margin-bottom: 30px;">
+                    نظام وساطة ذكي يحمي خصوصيتك ويتولى جميع تفاصيل البيع والشراء نيابة عنك
+                </p>
+                
+                <div class="process-steps">
+                    <div class="process-step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h3>أضف كتابك</h3>
+                            <p>تعبئة نموذج بيع الكتاب بالمعلومات المطلوبة بشكل سهل وسريع</p>
+                        </div>
+                    </div>
+                    
+                    <div class="process-step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h3>نتصل بك</h3>
+                            <p>سيقوم فريقنا بالتواصل معك لتأكيد المعلومات والتفاصيل</p>
+                        </div>
+                    </div>
+                    
+                    <div class="process-step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h3>نعرض الكتاب</h3>
+                            <p>نقوم بعرض الكتاب والترويج له للعملاء المهتمين</p>
+                        </div>
+                    </div>
+                    
+                    <div class="process-step">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <h3>التفاوض مع عميل</h3>
+                            <p>نتواصل مع العملاء المحتملين وندير المفاوضات نيابة عنك</p>
+                        </div>
+                    </div>
+                    
+                    <div class="process-step">
+                        <div class="step-number">5</div>
+                        <div class="step-content">
+                            <h3>ننسق التسليم</h3>
+                            <p>ننسق معك ومع العميل لترتيب عملية التسليم بشكل آمن</p>
+                        </div>
+                    </div>
+                    
+                    <div class="process-step">
+                        <div class="step-number">6</div>
+                        <div class="step-content">
+                            <h3>تحصل على المبلغ</h3>
+                            <p>تحصل على سعر البيع بعد خصم العمولة البسيطة</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="note-box">
+                    <h4><i class="fas fa-exclamation-circle"></i>ملاحظات مهمة:</h4>
+                    <ul>
+                        <li>لا تظهر معلومات الاتصال الخاصة بك للعملاء</li>
+                        <li>نتولى جميع مفاوضات السعر والتفاصيل نيابة عنك</li>
+                        <li>يمكنك سحب الكتاب من النظام في أي وقت تشاء</li>
+                        <li>نحن نضمن حماية معلوماتك الشخصية بشكل كامل</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- قسم البحث المتقدم -->
+            <div class="about-section">
+                <h2 class="section-title"><i class="fas fa-search-plus"></i>البحث المتقدم</h2>
+                <p style="font-size: 1.1rem; line-height: 1.8; color: var(--text-color);">
+                    خدمة بحث متقدمة في الموارد الأكاديمية الجزائرية. ادخل كلمة مفتاحية واحصل على النتائج 
+                    من جميع المكتبات والمستودعات الرقمية في مكان واحد.
+                </p>
+                
+                <div class="info-box">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>معلومة هامة:</strong> الخدمة مجانية حالياً خلال فترة التطوير. نعمل على تحسينها 
+                    باستمرار وإضافة المزيد من المصادر والمكتبات.
+                </div>
+                
+                <h3 style="color: var(--primary-color); margin: 40px 0 25px 0; font-size: 1.5rem;">
+                    <i class="fas fa-rocket"></i> ما نعمل على تطويره
+                </h3>
+                
+                <div class="development-grid">
+                    <div class="dev-item">
+                        <div class="dev-icon">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <h4>خدمة بحث متقدمة</h4>
+                        <p>خدمة بحث متقدمة في المحتوى الأكاديمي الجزائري</p>
+                    </div>
+                    
+                    <div class="dev-item">
+                        <div class="dev-icon">
+                            <i class="fas fa-database"></i>
+                        </div>
+                        <h4>قاعدة بيانات شاملة</h4>
+                        <p>جمع وتنظيم المحتوى الأكاديمي من الجامعات الجزائرية</p>
+                    </div>
+                    
+                    <div class="dev-item">
+                        <div class="dev-icon">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <h4>محرك بحث ذكي</h4>
+                        <p>بحث متقدم في النصوص الكاملة للموارد الأكاديمية</p>
+                    </div>
+                    
+                    <div class="dev-item">
+                        <div class="dev-icon">
+                            <i class="fas fa-filter"></i>
+                        </div>
+                        <h4>تصفية متقدمة</h4>
+                        <p>مرشحات دقيقة حسب التخصص، السنة، الجامعة وغيرها</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- قسم الدعوة للعمل -->
+          
+<div class="cta-section">
+    <div class="cta-content">
+        <h2>انضم إلى مجتمع Findemy.dz</h2>
+        <p>سجل الآن وابدأ رحلتك في اكتشاف المعرفة وتبادل الكتب مع مجتمع القراء والباحثين</p>
+        
+        <div class="cta-buttons">
+            {% if not user_logged_in %}
+            <a href="{{ url_for('register') }}" class="btn btn-light btn-large">
+                <i class="fas fa-user-plus"></i> إنشاء حساب جديد
+            </a>
+            <a href="{{ url_for('login') }}" class="btn btn-light btn-large btn-login">
+                <i class="fas fa-sign-in-alt"></i> تسجيل الدخول
+            </a>
+            {% endif %}
+            <a href="{{ url_for('books') }}" class="btn btn-light btn-large">
+                <i class="fas fa-exchange-alt"></i> تصفح الكتب المستعملة
+            </a>
+        </div>
+    </div>
+</div>
+        </div>
+    </main>
+
+    <!-- الفوتر -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <!-- اللوجو في الفوتر مع بديل -->
+                    <img src="{{ url_for('static', filename='img/LOGO B.png') }}" alt="Findemy.dz" class="logo-img"
+                         onerror="this.style.display='none'; document.getElementById('footerLogoFallback').style.display='block';">
+                    <div id="footerLogoFallback" class="logo-fallback" style="display: none; font-size: 1.5rem;">
+                        FINDEMY.DZ
+                    </div>
+                    <p class="footer-description">
+                        منصة تجمع كل ما يحتاجه الطالب والباحث في مكان واحد
+                    </p>
+                </div>
+                <div class="footer-links">
+                    <div class="footer-column">
+                        <h4>روابط سريعة</h4>
+                        <a href="https://www.researchgate.net/login" target="_blank"><i class="fas fa-external-link-alt"></i> ResearchGate</a>
+                        <a href="https://scholar.google.com/" target="_blank"><i class="fas fa-external-link-alt"></i> Google Scholar</a>
+                        <a href="https://www.academia.edu/" target="_blank"><i class="fas fa-external-link-alt"></i> Academia</a>
+                        <a href="https://www.sndl.cerist.dz/" target="_blank"><i class="fas fa-external-link-alt"></i> SNDL</a>
+                        <a href="https://endnote.com/" target="_blank"><i class="fas fa-external-link-alt"></i> EndNote</a>
+                    </div>
+                    <div class="footer-column">
+                        <h4>تواصل معنا</h4>
+                        <p><i class="fas fa-envelope"></i> contact@findemy.dz</p>
+                        <p><i class="fas fa-phone"></i> +213 XX XX XX XX</p>
+                    </div>
+                    <div class="footer-column">
+                        <h4>عن المنصة</h4>
+                        <a href="{{ url_for('about') }}"><i class="fas fa-info-circle"></i> عن المنصة</a>
+                        <a href="{{ url_for('register') }}"><i class="fas fa-user-plus"></i> إنشاء حساب</a>
+                        <a href="{{ url_for('login') }}"><i class="fas fa-sign-in-alt"></i> تسجيل الدخول</a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>© 2025 Findemy.dz – جميع الحقوق محفوظة</p>
+                <p>منصة تقدم خدمات المعلومات</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
