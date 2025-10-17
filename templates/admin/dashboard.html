@@ -233,82 +233,95 @@
                 </div>
             </div>
 
-            <!-- الكتب المعلقة -->
-            <div id="pending-books" class="admin-section">
-                <div class="section-header">
-                    <h2 class="section-title"><i class="fas fa-clock me-2"></i>الكتب المعلقة للمراجعة</h2>
-                    <span class="status-badge status-pending">{{ pending_books|length }} كتاب</span>
+           <!-- الكتب المعلقة -->
+<div id="pending-books" class="admin-section">
+    <div class="section-header">
+        <h2 class="section-title"><i class="fas fa-clock me-2"></i>الكتب المعلقة للمراجعة</h2>
+        <span class="status-badge status-pending">{{ stats.pending_books }} كتاب</span>
+    </div>
+    
+    <div class="section-content">
+        {% if pending_books and pending_books|length > 0 %}
+        <div class="books-grid">
+            {% for book in pending_books %}
+            <div class="book-card" id="book-{{ book.id }}">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
+                    <h3 style="color: var(--primary-color); margin: 0; flex: 1;">{{ book.title }}</h3>
+                    <span class="status-badge status-pending">بانتظار المراجعة</span>
                 </div>
                 
-                <div class="section-content">
-                    {% if pending_books %}
-                    <div class="books-grid">
-                        {% for book in pending_books %}
-                        <div class="book-card" id="book-{{ book.id }}">
-                            <div style="display: flex; justify-content: between; align-items: flex-start; margin-bottom: 15px;">
-                                <h3 style="color: var(--primary-color); margin: 0; flex: 1;">{{ book.title }}</h3>
-                                <span class="status-badge status-pending">بانتظار المراجعة</span>
-                            </div>
-                            
-                            <p style="color: var(--secondary-color); margin-bottom: 10px;">
-                                <i class="fas fa-user-edit me-2"></i>{{ book.author }}
-                            </p>
-                            
-                            <div class="book-meta">
-                                <div class="meta-item">
-                                    <i class="fas fa-user"></i>
-                                    <span>البائع: {{ book.seller_name }}</span>
-                                </div>
-                                <div class="meta-item">
-                                    <i class="fas fa-map-marker-alt"></i>
-                                    <span>{{ book.city }}</span>
-                                </div>
-                                <div class="meta-item">
-                                    <i class="fas fa-tag"></i>
-                                    <span>{{ book.category }}</span>
-                                </div>
-                                <div class="meta-item">
-                                    <i class="fas fa-star"></i>
-                                    <span>{{ book.condition }}</span>
-                                </div>
-                            </div>
-                            
-                            {% if book.description %}
-                            <p style="color: var(--text-color); margin: 15px 0; line-height: 1.6;">
-                                {{ book.description }}
-                            </p>
-                            {% endif %}
-                            
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
-                                <div style="font-size: 1.5rem; font-weight: bold; color: var(--primary-color);">
-                                    {{ book.price }} دج
-                                </div>
-                                
-                                <div class="action-buttons">
-                                    <button onclick="approveBook({{ book.id }})" class="btn btn-success btn-sm">
-                                        <i class="fas fa-check"></i> قبول
-                                    </button>
-                                    <button onclick="rejectBook({{ book.id }})" class="btn btn-danger btn-sm">
-                                        <i class="fas fa-times"></i> رفض
-                                    </button>
-                                    <button onclick="viewBookDetails({{ book.id }})" class="btn btn-outline-primary btn-sm">
-                                        <i class="fas fa-eye"></i> تفاصيل
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        {% endfor %}
+                <p style="color: var(--secondary-color); margin-bottom: 10px;">
+                    <i class="fas fa-user-edit me-2"></i>{{ book.author }}
+                </p>
+                
+                <div class="book-meta">
+                    <div class="meta-item">
+                        <i class="fas fa-user"></i>
+                        <span>البائع: {{ book.seller_name or 'غير معروف' }}</span>
                     </div>
-                    {% else %}
-                    <div class="empty-state">
-                        <i class="fas fa-check-circle"></i>
-                        <h3>لا توجد كتب معلقة للمراجعة</h3>
-                        <p>جميع الكتب تمت مراجعتها والموافقة عليها</p>
+                    <div class="meta-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>{{ book.city or 'غير محدد' }}</span>
+                    </div>
+                    <div class="meta-item">
+                        <i class="fas fa-tag"></i>
+                        <span>{{ book.category or 'عام' }}</span>
+                    </div>
+                    <div class="meta-item">
+                        <i class="fas fa-star"></i>
+                        <span>{{ book.condition or 'غير محدد' }}</span>
+                    </div>
+                    {% if book.delivery_time %}
+                    <div class="meta-item">
+                        <i class="fas fa-truck"></i>
+                        <span>{{ book.delivery_time }}</span>
                     </div>
                     {% endif %}
                 </div>
+                
+                {% if book.description %}
+                <p style="color: var(--text-color); margin: 15px 0; line-height: 1.6;">
+                    {{ book.description }}
+                </p>
+                {% endif %}
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
+                    <div style="font-size: 1.5rem; font-weight: bold; color: var(--primary-color);">
+                        {{ book.price }} دج
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button onclick="approveBook({{ book.id }})" class="btn btn-success btn-sm">
+                            <i class="fas fa-check"></i> قبول
+                        </button>
+                        <button onclick="rejectBook({{ book.id }})" class="btn btn-danger btn-sm">
+                            <i class="fas fa-times"></i> رفض
+                        </button>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 10px; font-size: 0.8rem; color: var(--secondary-color);">
+                    <i class="fas fa-calendar"></i> 
+                    تم الإضافة: {{ book.created_at.strftime('%Y-%m-%d %H:%M') if book.created_at else 'غير معروف' }}
+                </div>
             </div>
-
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-check-circle"></i>
+            <h3>لا توجد كتب معلقة للمراجعة</h3>
+            <p>جميع الكتب تمت مراجعتها والموافقة عليها</p>
+            {% if stats.pending_books > 0 %}
+            <p style="color: var(--warning-color); margin-top: 10px;">
+                <i class="fas fa-exclamation-triangle"></i>
+                ملاحظة: الإحصائيات تظهر {{ stats.pending_books }} كتاب ولكن لا توجد بيانات!
+            </p>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
             <!-- طلبات الشراء المعلقة -->
             <div id="pending-orders" class="admin-section">
                 <div class="section-header">
