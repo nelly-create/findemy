@@ -100,10 +100,17 @@
                 </div>
                 
                 <div style="display: flex; gap: 10px;">
+                    {% if resource.url %}
                     <a href="{{ resource.url }}" target="_blank" class="btn btn-primary" style="flex: 1; text-align: center; padding: 12px; font-size: 0.9rem; text-decoration: none;">
                         <i class="fas fa-external-link-alt"></i> زيارة المكتبة
                     </a>
-                    {% if resource.repository_link %}
+                    {% else %}
+                    <button class="btn" style="flex: 1; text-align: center; padding: 12px; font-size: 0.9rem; background: var(--secondary-color); color: white; border: none; cursor: not-allowed; opacity: 0.6;" disabled>
+                        <i class="fas fa-external-link-alt"></i> رابط غير متوفر
+                    </button>
+                    {% endif %}
+                    
+                    {% if resource.repository_link and resource.repository_link != '' and resource.repository_link != 'غير متوفر' %}
                     <a href="{{ resource.repository_link }}" target="_blank" class="btn" style="flex: 1; text-align: center; padding: 12px; font-size: 0.9rem; background: var(--success-color); color: white; border: none; text-decoration: none;">
                         <i class="fas fa-database"></i> زيارة المستودع
                     </a>
@@ -120,11 +127,16 @@
         <!-- رسالة عدم وجود بيانات -->
         <div style="text-align: center; padding: 60px 20px; color: var(--secondary-color);">
             <i class="fas fa-database fa-3x" style="margin-bottom: 20px; opacity: 0.5;"></i>
-            <h3 style="color: var(--secondary-color); margin-bottom: 15px;">لا توجد موارد حالياً</h3>
-            <p>جاري تحميل البيانات من قاعدة البيانات...</p>
-            <button onclick="location.reload()" class="btn btn-primary" style="margin-top: 15px;">
-                <i class="fas fa-redo"></i> إعادة تحميل
-            </button>
+            <h3 style="color: var(--secondary-color); margin-bottom: 15px;">جاري تحميل البيانات...</h3>
+            <p>يتم الآن تحميل قاعدة البيانات للمرة الأولى، قد يستغرق ذلك بضع ثوانٍ</p>
+            <div style="margin-top: 20px;">
+                <button onclick="location.reload()" class="btn btn-primary" style="margin: 5px;">
+                    <i class="fas fa-redo"></i> إعادة تحميل
+                </button>
+                <a href="/" class="btn" style="margin: 5px; background: var(--secondary-color); color: white; text-decoration: none;">
+                    <i class="fas fa-home"></i> العودة للرئيسية
+                </a>
+            </div>
         </div>
     {% endif %}
 </section>
