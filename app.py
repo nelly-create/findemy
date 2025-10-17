@@ -13,9 +13,9 @@ app.secret_key = 'findemy-v2-secret-key-2024'
 def get_db_connection():
     """الاتصال بقاعدة البيانات SQLite - إصدار متوافق مع Render"""
     try:
-        # على Render، استخدم المسار المطلق في /tmp
+        # على Render، استخدم المسار في المجلد الرئيسي بدلاً من /tmp/
         if 'RENDER' in os.environ:
-            db_path = '/tmp/findemy.db'
+            db_path = 'findemy.db'  # ⚠️ غير هذا من '/tmp/findemy.db'
             # تأكد من وجود المجلد
             os.makedirs(os.path.dirname(db_path), exist_ok=True)
         else:
@@ -31,6 +31,29 @@ def get_db_connection():
         print(f"❌ خطأ في الاتصال بقاعدة البيانات: {err}")
         return None
         
+@app.before_request
+def check_database():
+    """التحقق من قاعدة البيانات قبل كل طلب (للإصلاح المؤقت)"""
+    try:
+        conn = get_db_connection()
+        if conn:
+            cursor = conn.cursor()
+            
+            # التحقق من وجود بيانات المستخدمين (بدلاً من الجداول فقط)
+            cursor.execute("SELECT COUNT(*) FROM users")
+            users_count = cursor.fetchone()[0]
+            conn.close()
+            
+            if users_count == 0:
+                print("⚠️ قاعدة البيانات فارغة، جاري إعادة تعبئة البيانات...")
+                init_real_data()
+                
+    except Exception as e:
+        print(f"❌ خطأ في التحقق من قاعدة البيانات: {e}")
+        # محاولة إنشاء الجداول مرة أخرى
+        init_real_data()
+
+
 def init_real_data():
     """إدخال جميع البيانات الحقيقية من ملفاتك"""
     print("🔍 جاري تحميل البيانات الحقيقية الكاملة...")
@@ -488,7 +511,16 @@ def init_real_data():
                 VALUES (?, ?, ?, ?)
             ''', ('Nelly Create', 'belloutinihel@gmail.com', hashed_password, 'admin'))
             print("✅ تم إنشاء حساب الأدمن")
-        
+            
+        # 4. مستخدم مريم (للإصلاح)
+        cursor.execute('DELETE FROM users WHERE id = 2')
+        hashed_password2 = generate_password_hash('123456')
+     cursor.execute('''
+        INSERT INTO users (id, full_name, email, password_hash, role) 
+           VALUES (?, ?, ?, ?, ?)
+        ''', (2, 'مريم', 'nelly.and.purple@gmail.com', hashed_password2, 'user'))
+       print("✅ تم إنشاء حساب للمستخدمة مريم (ID:2)") 
+
         # 6. عرض إحصائيات قاعدة البيانات
         print("\n📊 إحصائيات قاعدة البيانات النهائية:")
         print(f"   📚 الموارد: {resource_count} → {cursor.execute('SELECT COUNT(*) FROM resources').fetchone()[0]}")
