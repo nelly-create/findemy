@@ -1034,7 +1034,76 @@ def fix_db_redirect():
     """توجيه بسيط لصفحة الإصلاح"""
     return redirect('/admin/fix-database')
 
+# =====================================================
+# API للكتب المستعملة
+# =====================================================
 
+@app.route('/api/books')
+def get_books():
+    """API لجلب الكتب المعتمدة"""
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({'error': 'خطأ في الاتصال بقاعدة البيانات'}), 500
+    
+    try:
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT b.*, u.full_name as seller_name 
+            FROM books b 
+            JOIN users u ON b.seller_id = u.id 
+            WHERE b.status = "approved"
+            ORDER BY b.created_at DESC
+        ''')
+        books = [dict(row) for row in cursor.fetchall()]
+        conn.close()
+        
+        print(f"✅ تم جلب {len(books)} كتاب عبر API")
+        return jsonify(books)
+        
+    except Exception as e:
+        print(f"❌ خطأ في API الكتب: {e}")
+        return jsonify({'error': 'حدث خطأ في الخادم'}), 500
+
+@app.route('/api/books/search')
+def search_books():
+    """API للبحث في الكتب"""
+    query = request.args.get('q', '')
+    conn = get_db_connection()
+    
+    if not conn:
+        return jsonify({'error': 'خطأ في الاتصال'}), 500
+    
+    try:
+        cursor = conn.cursor()
+        
+        if query:
+            cursor.execute('''
+                SELECT b.*, u.full_name as seller_name 
+                FROM books b 
+                JOIN users u ON b.seller_id = u.id 
+                WHERE b.status = "approved"
+                AND (b.title LIKE ? OR b.author LIKE ? OR b.category LIKE ?)
+                ORDER BY b.created_at DESC
+            ''', (f'%{query}%', f'%{query}%', f'%{query}%'))
+        else:
+            cursor.execute('''
+                SELECT b.*, u.full_name as seller_name 
+                FROM books b 
+                JOIN users u ON b.seller_id = u.id 
+                WHERE b.status = "approved"
+                ORDER BY b.created_at DESC
+            ''')
+        
+        books = [dict(row) for row in cursor.fetchall()]
+        conn.close()
+        
+        print(f"✅ بحث الكتب: '{query}' - تم العثور على {len(books)} نتيجة")
+        return jsonify(books)
+        
+    except Exception as e:
+        print(f"❌ خطأ في بحث الكتب: {e}")
+        return jsonify({'error': 'حدث خطأ في البحث'}), 500
+        
 @app.route('/debug/books')
 def debug_books():
     """صفحة تصحيح لفحص مشكلة الكتب"""
