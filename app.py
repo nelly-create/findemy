@@ -1033,6 +1033,53 @@ def fix_database():
 def fix_db_redirect():
     """توجيه بسيط لصفحة الإصلاح"""
     return redirect('/admin/fix-database')
+
+
+@app.route('/debug/books')
+def debug_books():
+    """صفحة تصحيح لفحص مشكلة الكتب"""
+    conn = get_db_connection()
+    debug_info = {}
+    
+    if conn:
+        try:
+            cursor = conn.cursor()
+            
+            # التحقق من وجود الجداول
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
+            tables = cursor.fetchall()
+            debug_info['tables'] = [table['name'] for table in tables]
+            
+            # التحقق من جدول الكتب
+            cursor.execute("SELECT COUNT(*) as count FROM books")
+            books_count = cursor.fetchone()
+            debug_info['books_count'] = books_count['count'] if books_count else 0
+            
+            # التحقق من جدول المستخدمين
+            cursor.execute("SELECT COUNT(*) as count FROM users")
+            users_count = cursor.fetchone()
+            debug_info['users_count'] = users_count['count'] if users_count else 0
+            
+            # جلب بعض الكتب للعرض
+            cursor.execute('''
+                SELECT b.*, u.full_name as seller_name 
+                FROM books b 
+                LEFT JOIN users u ON b.seller_id = u.id 
+                WHERE b.status = "approved"
+                LIMIT 5
+            ''')
+            sample_books = cursor.fetchall()
+            debug_info['sample_books'] = [dict(book) for book in sample_books]
+            
+            conn.close()
+            
+        except Exception as e:
+            debug_info['error'] = str(e)
+            print(f"❌ خطأ في تصحيح الكتب: {e}")
+    
+    return jsonify(debug_info)
+
+
 # =====================================================
 # تشغيل التطبيق
 # =====================================================
