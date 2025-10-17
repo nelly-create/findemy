@@ -1277,7 +1277,155 @@ def api_sell_book():
         print(f"❌ خطأ في API بيع الكتاب: {e}")
         return jsonify({'error': 'حدث خطأ في الخادم. يرجى المحاولة مرة أخرى.'}), 500
 
+# =====================================================
+# 🔧 إضافة الـ routes المفقودة للموافقة على الكتب
+# =====================================================
 
+@app.route('/api/books/<int:book_id>/approve', methods=['POST'])
+@admin_required
+def approve_book(book_id):
+    """API للموافقة على كتاب"""
+    try:
+        conn = get_db_connection()
+        if not conn:
+            return jsonify({'success': False, 'error': 'خطأ في الاتصال بقاعدة البيانات'}), 500
+        
+        cursor = conn.cursor()
+        
+        # التحقق من وجود الكتاب
+        cursor.execute('SELECT * FROM books WHERE id = ?', (book_id,))
+        book = cursor.fetchone()
+        
+        if not book:
+            return jsonify({'success': False, 'error': 'الكتاب غير موجود'}), 404
+        
+        # تحديث حالة الكتاب إلى "approved"
+        cursor.execute('UPDATE books SET status = ? WHERE id = ?', ('approved', book_id))
+        conn.commit()
+        conn.close()
+        
+        print(f"✅ تمت الموافقة على الكتاب ID: {book_id}")
+        return jsonify({
+            'success': True, 
+            'message': 'تمت الموافقة على الكتاب بنجاح'
+        })
+        
+    except Exception as e:
+        print(f"❌ خطأ في الموافقة على الكتاب: {e}")
+        return jsonify({
+            'success': False, 
+            'error': f'حدث خطأ أثناء الموافقة على الكتاب: {str(e)}'
+        }), 500
+
+@app.route('/api/books/<int:book_id>/reject', methods=['POST'])
+@admin_required
+def reject_book(book_id):
+    """API لرفض كتاب"""
+    try:
+        data = request.get_json()
+        reason = data.get('reason', '') if data else ''
+        
+        conn = get_db_connection()
+        if not conn:
+            return jsonify({'success': False, 'error': 'خطأ في الاتصال بقاعدة البيانات'}), 500
+        
+        cursor = conn.cursor()
+        
+        # التحقق من وجود الكتاب
+        cursor.execute('SELECT * FROM books WHERE id = ?', (book_id,))
+        book = cursor.fetchone()
+        
+        if not book:
+            return jsonify({'success': False, 'error': 'الكتاب غير موجود'}), 404
+        
+        # تحديث حالة الكتاب إلى "rejected"
+        cursor.execute('UPDATE books SET status = ? WHERE id = ?', ('rejected', book_id))
+        conn.commit()
+        conn.close()
+        
+        print(f"✅ تم رفض الكتاب ID: {book_id} - السبب: {reason}")
+        return jsonify({
+            'success': True, 
+            'message': 'تم رفض الكتاب بنجاح'
+        })
+        
+    except Exception as e:
+        print(f"❌ خطأ في رفض الكتاب: {e}")
+        return jsonify({
+            'success': False, 
+            'error': f'حدث خطأ أثناء رفض الكتاب: {str(e)}'
+        }), 500
+
+# =====================================================
+# 🔧 إضافة API للطلبات
+# =====================================================
+
+@app.route('/api/orders', methods=['POST'])
+@login_required
+def create_order():
+    """API لإنشاء طلب شراء"""
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'success': False, 'error': 'بيانات غير صالحة'}), 400
+        
+        book_id = data.get('book_id')
+        full_name = data.get('full_name')
+        phone = data.get('phone')
+        city = data.get('city')
+        notes = data.get('notes', '')
+        payment_method = data.get('payment_method', 'cash')
+        
+        # التحقق من البيانات المطلوبة
+        if not all([book_id, full_name, phone, city]):
+            return jsonify({'success': False, 'error': 'يرجى ملء جميع الحقول المطلوبة'}), 400
+        
+        conn = get_db_connection()
+        if not conn:
+            return jsonify({'success': False, 'error': 'خطأ في الاتصال بالخادم'}), 500
+        
+        cursor = conn.cursor()
+        
+        # التحقق من وجود الكتاب
+        cursor.execute('SELECT * FROM books WHERE id = ? AND status = "approved"', (book_id,))
+        book = cursor.fetchone()
+        
+        if not book:
+            return jsonify({'success': False, 'error': 'الكتاب غير متوفر للبيع'}), 404
+        
+        # إنشاء الطلب
+        cursor.execute('''
+            INSERT INTO orders (book_id, seller_id, buyer_id, buyer_name, buyer_phone, buyer_city, notes, total_price, commission, status)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, "pending")
+        ''', (
+            book_id, 
+            book['seller_id'], 
+            session['user_id'],
+            full_name,
+            phone,
+            city,
+            notes,
+            book['price'],
+            book['price'] * 0.15  # عمولة 15%
+        ))
+        
+        conn.commit()
+        order_id = cursor.lastrowid
+        conn.close()
+        
+        print(f"✅ تم إنشاء طلب شراء جديد ID: {order_id} للكتاب: {book_id}")
+        return jsonify({
+            'success': True, 
+            'message': 'تم إرسال طلب الشراء بنجاح!',
+            'order_id': order_id
+        })
+        
+    except Exception as e:
+        print(f"❌ خطأ في إنشاء طلب الشراء: {e}")
+        return jsonify({
+            'success': False, 
+            'error': 'حدث خطأ في إنشاء طلب الشراء. يرجى المحاولة مرة أخرى.'
+        }), 500
 # =====================================================
 # تشغيل التطبيق
 # =====================================================
