@@ -110,22 +110,22 @@ def init_real_data():
         ''')
         
         cursor.execute('''
-         CREATE TABLE IF NOT EXISTS books (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          title TEXT NOT NULL,
-          author TEXT NOT NULL,
-          seller_id INTEGER,
-          price REAL,
-          category TEXT,
-          condition TEXT,
-          description TEXT,
-          city TEXT,
-          delivery_time TEXT,  -- ✅ أضف هذا العمود
-          status TEXT DEFAULT 'pending',
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          FOREIGN KEY (seller_id) REFERENCES users (id)
-           )
-       ''')
+            CREATE TABLE IF NOT EXISTS books (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                title TEXT NOT NULL,
+                author TEXT NOT NULL,
+                seller_id INTEGER,
+                price REAL,
+                category TEXT,
+                condition TEXT,
+                description TEXT,
+                city TEXT,
+                delivery_time TEXT,  -- ✅ أضف هذا العمود
+                status TEXT DEFAULT 'pending',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (seller_id) REFERENCES users (id)
+            )
+        ''')
         
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS orders (
@@ -456,8 +456,8 @@ def init_real_data():
             ('AJOL أفريقيا', 'https://www.ajol.info/', 'إضافية',
              'المجلات العلمية الأفريقية عبر الإنترنت', 'مجانية'),
         ]
- 
-              # 2. تحديث جدول الكتب إذا كان موجوداً بدون عمود delivery_time
+
+        # 4. تحديث جدول الكتب إذا كان موجوداً بدون عمود delivery_time
         try:
             cursor.execute("PRAGMA table_info(books)")
             columns = [column[1] for column in cursor.fetchall()]
@@ -470,7 +470,7 @@ def init_real_data():
         except Exception as e:
             print(f"⚠️ ملاحظة في تحديث الجداول: {e}")
 
-        # 3. التحقق من وجود البيانات أولاً
+        # 5. التحقق من وجود البيانات أولاً
         cursor.execute('SELECT COUNT(*) FROM resources')
         resource_count = cursor.fetchone()[0]
         
@@ -483,7 +483,7 @@ def init_real_data():
         cursor.execute('SELECT COUNT(*) FROM users')
         users_count = cursor.fetchone()[0]
         
-        # 4. إدخال البيانات إذا كانت الجداول فارغة
+        # 6. إدخال البيانات إذا كانت الجداول فارغة
         if resource_count == 0:
             cursor.executemany('''
                 INSERT INTO resources (name, type, university, wilaya, url, description, repository_link, repository_name, search_keywords)
@@ -502,7 +502,7 @@ def init_real_data():
         else:
             print(f"📊 يوجد {source_count} مصدر علمي في قاعدة البيانات")
         
-        # 5. إضافة مستخدم أدمن إذا لم يكن موجوداً
+        # 7. إضافة مستخدم أدمن إذا لم يكن موجوداً
         cursor.execute('SELECT COUNT(*) FROM users WHERE email = ?', ('belloutinihel@gmail.com',))
         if cursor.fetchone()[0] == 0:
             hashed_password = generate_password_hash('nelly2002')
@@ -512,16 +512,16 @@ def init_real_data():
             ''', ('Nelly Create', 'belloutinihel@gmail.com', hashed_password, 'admin'))
             print("✅ تم إنشاء حساب الأدمن")
             
-        # 4. مستخدم مريم (للإصلاح)
+        # 8. مستخدم مريم (للإصلاح) - المسافات البادئة المصححة
         cursor.execute('DELETE FROM users WHERE id = 2')
         hashed_password2 = generate_password_hash('123456')
         cursor.execute('''
-        INSERT INTO users (id, full_name, email, password_hash, role) 
-           VALUES (?, ?, ?, ?, ?)
-             ''', (2, 'مريم', 'nelly.and.purple@gmail.com', hashed_password2, 'user'))
-             print("✅ تم إنشاء حساب للمستخدمة مريم (ID:2)") 
+            INSERT INTO users (id, full_name, email, password_hash, role) 
+            VALUES (?, ?, ?, ?, ?)
+        ''', (2, 'مريم', 'nelly.and.purple@gmail.com', hashed_password2, 'user'))
+        print("✅ تم إنشاء حساب للمستخدمة مريم (ID:2)")
 
-        # 6. عرض إحصائيات قاعدة البيانات
+        # 9. عرض إحصائيات قاعدة البيانات
         print("\n📊 إحصائيات قاعدة البيانات النهائية:")
         print(f"   📚 الموارد: {resource_count} → {cursor.execute('SELECT COUNT(*) FROM resources').fetchone()[0]}")
         print(f"   🔬 المصادر العلمية: {source_count} → {cursor.execute('SELECT COUNT(*) FROM scientific_sources').fetchone()[0]}")
@@ -538,6 +538,7 @@ def init_real_data():
     finally:
         if conn:
             conn.close()
+
 # =====================================================
 # ديكورات التحقق
 # =====================================================
