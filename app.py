@@ -13,9 +13,11 @@ app.secret_key = 'findemy-v2-secret-key-2024'
 def get_db_connection():
     """الاتصال بقاعدة البيانات SQLite - إصدار متوافق مع Render"""
     try:
-        # على Render، استخدم المسار المطلق
+        # على Render، استخدم المسار المطلق في /tmp
         if 'RENDER' in os.environ:
-            db_path = '/var/data/findemy.db'
+            db_path = '/tmp/findemy.db'
+            # تأكد من وجود المجلد
+            os.makedirs(os.path.dirname(db_path), exist_ok=True)
         else:
             # للتطوير المحلي
             if not os.path.exists('data'):
@@ -28,7 +30,7 @@ def get_db_connection():
     except Exception as err:
         print(f"❌ خطأ في الاتصال بقاعدة البيانات: {err}")
         return None
-
+        
 def init_real_data():
     """إدخال جميع البيانات الحقيقية من ملفاتك"""
     print("🔍 جاري تحميل البيانات الحقيقية الكاملة...")
@@ -506,13 +508,16 @@ def admin_required(f):
 # تهيئة قاعدة البيانات عند بدء التشغيل
 # =====================================================
 
-@app.before_first_request
-def initialize_database():
-    """تهيئة قاعدة البيانات قبل أول طلب"""
-    print("🔄 بدء تهيئة قاعدة البيانات...")
-    init_real_data()
+# بديل عن before_first_request (تم إزالته في Flask 2.3+)
+def initialize_database_first_time():
+    """تهيئة قاعدة البيانات عند بدء التشغيل"""
+    with app.app_context():
+        print("🔄 بدء تهيئة قاعدة البيانات لأول مرة...")
+        init_real_data()
 
-# بديل إذا لم يعمل before_first_request
+# استدعاء التهيئة عند بدء التشغيل
+initialize_database_first_time()
+
 @app.before_request
 def check_database():
     """التحقق من قاعدة البيانات قبل كل طلب (للإصلاح المؤقت)"""
