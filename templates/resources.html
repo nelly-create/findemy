@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الموارد - المكتبات الجامعية الجزائرية | Findemy.dz</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+   <!-- القائمة الجانبية -->
+<nav class="sidebar">
+    <div class="sidebar-header">
+        <h2><i class="fas fa-graduation-cap"></i> Findemy.dz</h2>
+    </div>
+    <ul class="sidebar-menu">
+        <li><a href="{{ url_for('home') }}"><i class="fas fa-home"></i> الرئيسية</a></li>
+        <li><a href="{{ url_for('resources') }}"><i class="fas fa-book"></i> الموارد</a></li>
+        <li><a href="{{ url_for('sources') }}"><i class="fas fa-database"></i> المصادر العلمية</a></li>
+        <li><a href="{{ url_for('search') }}"><i class="fas fa-search"></i> البحث المتقدم</a></li>
+        <li><a href="{{ url_for('books') }}"><i class="fas fa-exchange-alt"></i> الكتب المستعملة</a></li>
+        <li><a href="{{ url_for('about') }}"><i class="fas fa-info-circle"></i> عن المنصة</a></li>
+        
+        <!-- رابط لوحة التحكم يظهر فقط للأدمن -->
+        {% if session.get('user_role') == 'admin' %}
+        <li><a href="{{ url_for('admin_dashboard') }}"><i class="fas fa-tachometer-alt"></i> لوحة التحكم</a></li>
+        {% endif %}
+        
+        {% if user_logged_in %}
+            <li><a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> تسجيل الخروج</a></li>
+        {% else %}
+            <li><a href="{{ url_for('login') }}"><i class="fas fa-sign-in-alt"></i> تسجيل الدخول</a></li>
+            <li><a href="{{ url_for('register') }}"><i class="fas fa-user-plus"></i> إنشاء حساب</a></li>
+        {% endif %}
+    </ul>
+</nav>
+
+    <!-- زر القائمة -->
+    <button class="menu-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- المحتوى الرئيسي -->
+    <div class="main-content">
+        <!-- قسم البطل -->
+        <section class="hero-section">
+            <div class="hero-overlay">
+                <div class="hero-container">
+                    <h1 class="hero-title">الموارد الأكاديمية</h1>
+                    <p class="hero-description">
+                        منصة شاملة تجمع كل المكتبات الرقمية والمستودعات المؤسسية للجامعات الجزائرية
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- شريط البحث البسيط -->
+        <section class="container" style="padding: 40px 20px;">
+            <div style="background: var(--card-bg); padding: 30px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); max-width: 800px; margin: 0 auto;">
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <input type="text" id="searchInput" placeholder="ابحث باسم الجامعة، الولاية، أو المكتبة..." 
+                           style="flex: 1; padding: 15px; border: 2px solid var(--search-border); border-radius: 8px; font-size: 16px;">
+                    <button onclick="searchResources()" class="btn btn-primary" style="padding: 15px 25px;">
+                        <i class="fas fa-search"></i> بحث
+                    </button>
+                </div>
+                <div id="searchStats" style="text-align: center; color: var(--secondary-color); font-size: 0.9rem; margin-top: 10px;"></div>
+            </div>
+        </section>
+
+        <!-- شبكة الموارد -->
+        <section class="container" style="padding: 20px 20px 60px;">
+            <!-- قائمة الموارد -->
+            <div id="resourcesList" class="resources-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 25px;">
+                <!-- سيتم ملؤها بالجافاسكريبت -->
+            </div>
+
+            <!-- رسالة التحميل -->
+            <div id="loadingMessage" style="text-align: center; padding: 40px; color: var(--secondary-color);">
+                <i class="fas fa-spinner fa-spin fa-2x"></i>
+                <p style="margin-top: 15px;">جاري تحميل الموارد...</p>
+            </div>
+
+            <!-- رسالة عدم العثور على نتائج -->
+            <div id="noResults" style="display: none; text-align: center; padding: 60px 20px; color: var(--secondary-color);">
+                <i class="fas fa-search fa-3x" style="margin-bottom: 20px; opacity: 0.5;"></i>
+                <h3 style="color: var(--secondary-color); margin-bottom: 15px;">لم نعثر على نتائج</h3>
+                <p>حاول استخدام كلمات بحث أخرى</p>
+            </div>
+        </section>
+
+        <!-- الفوتر -->
+        <footer class="footer">
+            <div class="container">
+                <div class="footer-content">
+                    <div class="footer-brand">
+                        <img src="{{ url_for('static', filename='img/LOGO B.png') }}" alt="Findemy.dz" class="logo-img">
+                        <p class="footer-description">
+                            منصة تجمع كل ما يحتاجه الطالب والباحث في مكان واحد
+                        </p>
+                    </div>
+                    <div class="footer-links">
+                        <div class="footer-column">
+                            <h4>روابط سريعة</h4>
+                            <a href="https://www.researchgate.net/login" target="_blank"><i class="fas fa-external-link-alt"></i> ResearchGate</a>
+                            <a href="https://scholar.google.com/" target="_blank"><i class="fas fa-external-link-alt"></i> Google Scholar</a>
+                            <a href="https://www.academia.edu/" target="_blank"><i class="fas fa-external-link-alt"></i> Academia</a>
+                            <a href="https://www.sndl.cerist.dz/" target="_blank"><i class="fas fa-external-link-alt"></i> SNDL</a>
+                            <a href="https://endnote.com/" target="_blank"><i class="fas fa-external-link-alt"></i> EndNote</a>
+                        </div>
+                        <div class="footer-column">
+                            <h4>تواصل معنا</h4>
+                            <p><i class="fas fa-envelope"></i> contact@findemy.dz</p>
+                            <p><i class="fas fa-phone"></i> +213 XX XX XX XX</p>
+                        </div>
+                        <div class="footer-column">
+                            <h4>عن المنصة</h4>
+                            <a href="{{ url_for('about') }}"><i class="fas fa-info-circle"></i> عن المنصة</a>
+                            <a href="{{ url_for('register') }}"><i class="fas fa-user-plus"></i> إنشاء حساب</a>
+                            <a href="{{ url_for('login') }}"><i class="fas fa-sign-in-alt"></i> تسجيل الدخول</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="footer-bottom">
+                    <p>© 2025 Findemy.dz – جميع الحقوق محفوظة</p>
+                    <p>منصة تقدم خدمات المعلومات</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <script>
+        let resourcesData = [];
+
+        // عند تحميل الصفحة
+        document.addEventListener('DOMContentLoaded', function() {
+            loadResourcesFromAPI();
+            
+            // البحث عند الضغط على Enter
+            document.getElementById('searchInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    searchResources();
+                }
+            });
+        });
+
+        // تحميل البيانات من API
+        async function loadResourcesFromAPI() {
+            const loadingMessage = document.getElementById('loadingMessage');
+            const noResults = document.getElementById('noResults');
+            const resourcesList = document.getElementById('resourcesList');
+            
+            try {
+                loadingMessage.style.display = 'block';
+                noResults.style.display = 'none';
+                resourcesList.innerHTML = '';
+                
+                const response = await fetch('/api/resources');
+                
+                if (!response.ok) {
+                    throw new Error('فشل في جلب البيانات من الخادم');
+                }
+                
+                resourcesData = await response.json();
+                
+                if (resourcesData.length === 0) {
+                    showNoResults();
+                    return;
+                }
+                
+                displayResources(resourcesData);
+                updateSearchStats(resourcesData.length);
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showErrorMessage('حدث خطأ في تحميل البيانات. يرجى المحاولة مرة أخرى.');
+            } finally {
+                loadingMessage.style.display = 'none';
+            }
+        }
+
+        // عرض الموارد
+        function displayResources(data) {
+            const resourcesList = document.getElementById('resourcesList');
+            resourcesList.innerHTML = '';
+            
+            data.forEach((resource, index) => {
+                const resourceCard = createResourceCard(resource);
+                resourcesList.appendChild(resourceCard);
+                
+                // تأثير التتابع في الظهور
+                setTimeout(() => {
+                    resourceCard.style.opacity = '1';
+                    resourceCard.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+        }
+// إنشاء بطاقة مورد
+function createResourceCard(resource) {
+    const card = document.createElement('div');
+    card.className = 'resource-card';
+    card.style.cssText = `
+        background: var(--card-bg); 
+        padding: 25px; 
+        border-radius: 12px; 
+        box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        transition: all 0.3s ease;
+        border-top: 4px solid ${resource.type === 'مكتبة' ? 'var(--primary-color)' : 'var(--success-color)'};
+        opacity: 0;
+        transform: translateY(20px);
+    `;
+
+    const repositoryLink = resource.repository_link || '';
+    const repositoryName = resource.repository_name || 'المستودع الرقمي';
+    const description = resource.description || 'مورد أكاديمي من الجامعات الجزائرية';
+
+    card.innerHTML = `
+        <div style="border-bottom: 2px solid #f0f0f0; padding-bottom: 15px; margin-bottom: 15px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+                <h3 style="color: var(--primary-color); font-size: 1.2rem; margin: 0; line-height: 1.4;">${resource.name}</h3>
+                <span style="background: ${resource.type === 'مكتبة' ? 'var(--primary-color)' : 'var(--success-color)'}; color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem;">
+                    ${resource.type}
+                </span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+                <p style="color: var(--secondary-color); margin: 0; font-size: 0.9rem;">
+                    <i class="fas fa-map-marker-alt"></i> ${resource.wilaya}
+                </p>
+                ${resource.university ? `
+                <p style="color: var(--secondary-color); margin: 0; font-size: 0.9rem;">
+                    <i class="fas fa-university"></i> ${resource.university}
+                </p>
+                ` : ''}
+            </div>
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+            <p style="color: var(--text-color); margin-bottom: 15px; line-height: 1.6; font-size: 0.95rem;">
+                ${description}
+            </p>
+        </div>
+        
+        <div style="display: flex; gap: 10px;">
+            <a href="${resource.url}" target="_blank" class="btn btn-primary" style="flex: 1; text-align: center; padding: 12px; font-size: 0.9rem; text-decoration: none;">
+                <i class="fas fa-external-link-alt"></i> زيارة المكتبة
+            </a>
+            ${repositoryLink ? `
+            <a href="${repositoryLink}" target="_blank" class="btn" style="flex: 1; text-align: center; padding: 12px; font-size: 0.9rem; background: var(--success-color); color: white; border: none; text-decoration: none;">
+                <i class="fas fa-database"></i> زيارة المستودع
+            </a>
+            ` : `
+            <button class="btn" style="flex: 1; text-align: center; padding: 12px; font-size: 0.9rem; background: var(--secondary-color); color: white; border: none; cursor: not-allowed; opacity: 0.6;" disabled>
+                <i class="fas fa-database"></i> لا يوجد مستودع
+            </button>
+            `}
+        </div>
+    `;
+
+    return card;
+}
+
+        // البحث في الموارد
+        async function searchResources() {
+            const searchTerm = document.getElementById('searchInput').value;
+            
+            const loadingMessage = document.getElementById('loadingMessage');
+            const resourcesList = document.getElementById('resourcesList');
+            
+            try {
+                loadingMessage.style.display = 'block';
+                resourcesList.innerHTML = '';
+                
+                const params = new URLSearchParams();
+                if (searchTerm) params.append('q', searchTerm);
+                
+                const response = await fetch(`/api/resources/search?${params}`);
+                
+                if (!response.ok) {
+                    throw new Error('فشل في البحث');
+                }
+                
+                const filteredData = await response.json();
+                
+                displayResources(filteredData);
+                updateSearchStats(filteredData.length);
+                
+                const noResults = document.getElementById('noResults');
+                noResults.style.display = filteredData.length === 0 ? 'block' : 'none';
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showErrorMessage('حدث خطأ في البحث');
+            } finally {
+                loadingMessage.style.display = 'none';
+            }
+        }
+
+        // تحديث إحصائيات البحث
+        function updateSearchStats(count) {
+            document.getElementById('searchStats').textContent = `عثرنا على ${count} مورد${count !== 1 ? 'ات' : ''}`;
+        }
+
+        // عرض رسالة الخطأ
+        function showErrorMessage(message) {
+            const resourcesList = document.getElementById('resourcesList');
+            resourcesList.innerHTML = `
+                <div style="text-align: center; padding: 40px; color: var(--error-color);">
+                    <i class="fas fa-exclamation-triangle fa-3x"></i>
+                    <h3 style="margin: 20px 0;">${message}</h3>
+                    <button onclick="loadResourcesFromAPI()" class="btn btn-primary">إعادة المحاولة</button>
+                </div>
+            `;
+        }
+
+        // عرض رسالة عدم وجود نتائج
+        function showNoResults() {
+            document.getElementById('noResults').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
