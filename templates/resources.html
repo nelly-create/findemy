@@ -181,6 +181,40 @@
         </footer>
     </div>
 
+   <script>
+// دالة إظهار/إخفاء القائمة الجانبية
+function toggleSidebar() {
+    console.log('تم النقر على زر القائمة');
+    const sidebar = document.querySelector('.sidebar');
+    const mainContent = document.querySelector('.main-content');
     
+    if (sidebar && mainContent) {
+        sidebar.classList.toggle('active');
+        if (window.innerWidth <= 992) {
+            mainContent.classList.toggle('sidebar-active');
+        }
+    }
+}
+
+// تهيئة عند تحميل الصفحة
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('صفحة الموارد محملة');
+    
+    // إغلاق القائمة عند النقر على رابط
+    const sidebarLinks = document.querySelectorAll('.sidebar-menu a');
+    sidebarLinks.forEach(link => {
+        link.addEventListener('click', function() {
+            if (window.innerWidth <= 992) {
+                const sidebar = document.querySelector('.sidebar');
+                const mainContent = document.querySelector('.main-content');
+                if (sidebar && mainContent) {
+                    sidebar.classList.remove('active');
+                    mainContent.classList.remove('sidebar-active');
+                }
+            }
+        });
+    });
+});
+</script> 
 </body>
 </html>
