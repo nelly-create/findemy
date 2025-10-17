@@ -1011,7 +1011,28 @@ def buy_book(book_id):
         return redirect(url_for('books'))
     
     return render_template('buy-bk.html', book=dict(book), user_logged_in=True)
+    
+@app.route('/admin/fix-database')
+def fix_database():
+    """صفحة إصلاح قاعدة البيانات يدوياً"""
+    try:
+        print("🛠️ بدء إصلاح قاعدة البيانات يدوياً...")
+        init_real_data()
+        message = "✅ تم إصلاح قاعدة البيانات بنجاح! جميع الجداول والبيانات جاهزة."
+        print(message)
+    except Exception as e:
+        message = f"❌ خطأ في إصلاح قاعدة البيانات: {e}"
+        print(message)
+    
+    from datetime import datetime
+    return render_template('fix_database.html', 
+                         message=message, 
+                         now=datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
+@app.route('/fix-db')
+def fix_db_redirect():
+    """توجيه بسيط لصفحة الإصلاح"""
+    return redirect('/admin/fix-database')
 # =====================================================
 # تشغيل التطبيق
 # =====================================================
