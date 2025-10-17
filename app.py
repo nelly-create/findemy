@@ -515,11 +515,11 @@ def init_real_data():
         # 4. مستخدم مريم (للإصلاح)
         cursor.execute('DELETE FROM users WHERE id = 2')
         hashed_password2 = generate_password_hash('123456')
-     cursor.execute('''
+        cursor.execute('''
         INSERT INTO users (id, full_name, email, password_hash, role) 
            VALUES (?, ?, ?, ?, ?)
-        ''', (2, 'مريم', 'nelly.and.purple@gmail.com', hashed_password2, 'user'))
-       print("✅ تم إنشاء حساب للمستخدمة مريم (ID:2)") 
+             ''', (2, 'مريم', 'nelly.and.purple@gmail.com', hashed_password2, 'user'))
+             print("✅ تم إنشاء حساب للمستخدمة مريم (ID:2)") 
 
         # 6. عرض إحصائيات قاعدة البيانات
         print("\n📊 إحصائيات قاعدة البيانات النهائية:")
