@@ -67,27 +67,67 @@
                 <div id="searchStats" style="text-align: center; color: var(--secondary-color); font-size: 0.9rem; margin-top: 10px;"></div>
             </div>
         </section>
-
-        <!-- شبكة الموارد -->
-        <section class="container" style="padding: 20px 20px 60px;">
-            <!-- قائمة الموارد -->
-            <div id="resourcesList" class="resources-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 25px;">
-                <!-- سيتم ملؤها بالجافاسكريبت -->
+<!-- شبكة الموارد -->
+<section class="container" style="padding: 20px 20px 60px;">
+    {% if resources and resources|length > 0 %}
+        <!-- قائمة الموارد -->
+        <div class="resources-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 25px;">
+            {% for resource in resources %}
+            <div class="resource-card" style="background: var(--card-bg); padding: 25px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.08); border-top: 4px solid {% if resource.type == 'مكتبة' %}var(--primary-color){% else %}var(--success-color){% endif %};">
+                <div style="border-bottom: 2px solid #f0f0f0; padding-bottom: 15px; margin-bottom: 15px;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+                        <h3 style="color: var(--primary-color); font-size: 1.2rem; margin: 0; line-height: 1.4;">{{ resource.name }}</h3>
+                        <span style="background: {% if resource.type == 'مكتبة' %}var(--primary-color){% else %}var(--success-color){% endif %}; color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem;">
+                            {{ resource.type }}
+                        </span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+                        <p style="color: var(--secondary-color); margin: 0; font-size: 0.9rem;">
+                            <i class="fas fa-map-marker-alt"></i> {{ resource.wilaya }}
+                        </p>
+                        {% if resource.university %}
+                        <p style="color: var(--secondary-color); margin: 0; font-size: 0.9rem;">
+                            <i class="fas fa-university"></i> {{ resource.university }}
+                        </p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <p style="color: var(--text-color); margin-bottom: 15px; line-height: 1.6; font-size: 0.95rem;">
+                        {{ resource.description or 'مورد أكاديمي من الجامعات الجزائرية' }}
+                    </p>
+                </div>
+                
+                <div style="display: flex; gap: 10px;">
+                    <a href="{{ resource.url }}" target="_blank" class="btn btn-primary" style="flex: 1; text-align: center; padding: 12px; font-size: 0.9rem; text-decoration: none;">
+                        <i class="fas fa-external-link-alt"></i> زيارة المكتبة
+                    </a>
+                    {% if resource.repository_link %}
+                    <a href="{{ resource.repository_link }}" target="_blank" class="btn" style="flex: 1; text-align: center; padding: 12px; font-size: 0.9rem; background: var(--success-color); color: white; border: none; text-decoration: none;">
+                        <i class="fas fa-database"></i> زيارة المستودع
+                    </a>
+                    {% else %}
+                    <button class="btn" style="flex: 1; text-align: center; padding: 12px; font-size: 0.9rem; background: var(--secondary-color); color: white; border: none; cursor: not-allowed; opacity: 0.6;" disabled>
+                        <i class="fas fa-database"></i> لا يوجد مستودع
+                    </button>
+                    {% endif %}
+                </div>
             </div>
-
-            <!-- رسالة التحميل -->
-            <div id="loadingMessage" style="text-align: center; padding: 40px; color: var(--secondary-color);">
-                <i class="fas fa-spinner fa-spin fa-2x"></i>
-                <p style="margin-top: 15px;">جاري تحميل الموارد...</p>
-            </div>
-
-            <!-- رسالة عدم العثور على نتائج -->
-            <div id="noResults" style="display: none; text-align: center; padding: 60px 20px; color: var(--secondary-color);">
-                <i class="fas fa-search fa-3x" style="margin-bottom: 20px; opacity: 0.5;"></i>
-                <h3 style="color: var(--secondary-color); margin-bottom: 15px;">لم نعثر على نتائج</h3>
-                <p>حاول استخدام كلمات بحث أخرى</p>
-            </div>
-        </section>
+            {% endfor %}
+        </div>
+    {% else %}
+        <!-- رسالة عدم وجود بيانات -->
+        <div style="text-align: center; padding: 60px 20px; color: var(--secondary-color);">
+            <i class="fas fa-database fa-3x" style="margin-bottom: 20px; opacity: 0.5;"></i>
+            <h3 style="color: var(--secondary-color); margin-bottom: 15px;">لا توجد موارد حالياً</h3>
+            <p>جاري تحميل البيانات من قاعدة البيانات...</p>
+            <button onclick="location.reload()" class="btn btn-primary" style="margin-top: 15px;">
+                <i class="fas fa-redo"></i> إعادة تحميل
+            </button>
+        </div>
+    {% endif %}
+</section>
 
         <!-- الفوتر -->
         <footer class="footer">
@@ -129,194 +169,6 @@
         </footer>
     </div>
 
-    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
-    <script>
-        let resourcesData = [];
-
-        // عند تحميل الصفحة
-        document.addEventListener('DOMContentLoaded', function() {
-            loadResourcesFromAPI();
-            
-            // البحث عند الضغط على Enter
-            document.getElementById('searchInput').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    searchResources();
-                }
-            });
-        });
-
-        // تحميل البيانات من API
-        async function loadResourcesFromAPI() {
-            const loadingMessage = document.getElementById('loadingMessage');
-            const noResults = document.getElementById('noResults');
-            const resourcesList = document.getElementById('resourcesList');
-            
-            try {
-                loadingMessage.style.display = 'block';
-                noResults.style.display = 'none';
-                resourcesList.innerHTML = '';
-                
-                const response = await fetch('/api/resources');
-                
-                if (!response.ok) {
-                    throw new Error('فشل في جلب البيانات من الخادم');
-                }
-                
-                resourcesData = await response.json();
-                
-                if (resourcesData.length === 0) {
-                    showNoResults();
-                    return;
-                }
-                
-                displayResources(resourcesData);
-                updateSearchStats(resourcesData.length);
-                
-            } catch (error) {
-                console.error('Error:', error);
-                showErrorMessage('حدث خطأ في تحميل البيانات. يرجى المحاولة مرة أخرى.');
-            } finally {
-                loadingMessage.style.display = 'none';
-            }
-        }
-
-        // عرض الموارد
-        function displayResources(data) {
-            const resourcesList = document.getElementById('resourcesList');
-            resourcesList.innerHTML = '';
-            
-            data.forEach((resource, index) => {
-                const resourceCard = createResourceCard(resource);
-                resourcesList.appendChild(resourceCard);
-                
-                // تأثير التتابع في الظهور
-                setTimeout(() => {
-                    resourceCard.style.opacity = '1';
-                    resourceCard.style.transform = 'translateY(0)';
-                }, index * 100);
-            });
-        }
-// إنشاء بطاقة مورد
-function createResourceCard(resource) {
-    const card = document.createElement('div');
-    card.className = 'resource-card';
-    card.style.cssText = `
-        background: var(--card-bg); 
-        padding: 25px; 
-        border-radius: 12px; 
-        box-shadow: 0 5px 20px rgba(0,0,0,0.08);
-        transition: all 0.3s ease;
-        border-top: 4px solid ${resource.type === 'مكتبة' ? 'var(--primary-color)' : 'var(--success-color)'};
-        opacity: 0;
-        transform: translateY(20px);
-    `;
-
-    const repositoryLink = resource.repository_link || '';
-    const repositoryName = resource.repository_name || 'المستودع الرقمي';
-    const description = resource.description || 'مورد أكاديمي من الجامعات الجزائرية';
-
-    card.innerHTML = `
-        <div style="border-bottom: 2px solid #f0f0f0; padding-bottom: 15px; margin-bottom: 15px;">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
-                <h3 style="color: var(--primary-color); font-size: 1.2rem; margin: 0; line-height: 1.4;">${resource.name}</h3>
-                <span style="background: ${resource.type === 'مكتبة' ? 'var(--primary-color)' : 'var(--success-color)'}; color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem;">
-                    ${resource.type}
-                </span>
-            </div>
-            <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
-                <p style="color: var(--secondary-color); margin: 0; font-size: 0.9rem;">
-                    <i class="fas fa-map-marker-alt"></i> ${resource.wilaya}
-                </p>
-                ${resource.university ? `
-                <p style="color: var(--secondary-color); margin: 0; font-size: 0.9rem;">
-                    <i class="fas fa-university"></i> ${resource.university}
-                </p>
-                ` : ''}
-            </div>
-        </div>
-        
-        <div style="margin-bottom: 20px;">
-            <p style="color: var(--text-color); margin-bottom: 15px; line-height: 1.6; font-size: 0.95rem;">
-                ${description}
-            </p>
-        </div>
-        
-        <div style="display: flex; gap: 10px;">
-            <a href="${resource.url}" target="_blank" class="btn btn-primary" style="flex: 1; text-align: center; padding: 12px; font-size: 0.9rem; text-decoration: none;">
-                <i class="fas fa-external-link-alt"></i> زيارة المكتبة
-            </a>
-            ${repositoryLink ? `
-            <a href="${repositoryLink}" target="_blank" class="btn" style="flex: 1; text-align: center; padding: 12px; font-size: 0.9rem; background: var(--success-color); color: white; border: none; text-decoration: none;">
-                <i class="fas fa-database"></i> زيارة المستودع
-            </a>
-            ` : `
-            <button class="btn" style="flex: 1; text-align: center; padding: 12px; font-size: 0.9rem; background: var(--secondary-color); color: white; border: none; cursor: not-allowed; opacity: 0.6;" disabled>
-                <i class="fas fa-database"></i> لا يوجد مستودع
-            </button>
-            `}
-        </div>
-    `;
-
-    return card;
-}
-
-        // البحث في الموارد
-        async function searchResources() {
-            const searchTerm = document.getElementById('searchInput').value;
-            
-            const loadingMessage = document.getElementById('loadingMessage');
-            const resourcesList = document.getElementById('resourcesList');
-            
-            try {
-                loadingMessage.style.display = 'block';
-                resourcesList.innerHTML = '';
-                
-                const params = new URLSearchParams();
-                if (searchTerm) params.append('q', searchTerm);
-                
-                const response = await fetch(`/api/resources/search?${params}`);
-                
-                if (!response.ok) {
-                    throw new Error('فشل في البحث');
-                }
-                
-                const filteredData = await response.json();
-                
-                displayResources(filteredData);
-                updateSearchStats(filteredData.length);
-                
-                const noResults = document.getElementById('noResults');
-                noResults.style.display = filteredData.length === 0 ? 'block' : 'none';
-                
-            } catch (error) {
-                console.error('Error:', error);
-                showErrorMessage('حدث خطأ في البحث');
-            } finally {
-                loadingMessage.style.display = 'none';
-            }
-        }
-
-        // تحديث إحصائيات البحث
-        function updateSearchStats(count) {
-            document.getElementById('searchStats').textContent = `عثرنا على ${count} مورد${count !== 1 ? 'ات' : ''}`;
-        }
-
-        // عرض رسالة الخطأ
-        function showErrorMessage(message) {
-            const resourcesList = document.getElementById('resourcesList');
-            resourcesList.innerHTML = `
-                <div style="text-align: center; padding: 40px; color: var(--error-color);">
-                    <i class="fas fa-exclamation-triangle fa-3x"></i>
-                    <h3 style="margin: 20px 0;">${message}</h3>
-                    <button onclick="loadResourcesFromAPI()" class="btn btn-primary">إعادة المحاولة</button>
-                </div>
-            `;
-        }
-
-        // عرض رسالة عدم وجود نتائج
-        function showNoResults() {
-            document.getElementById('noResults').style.display = 'block';
-        }
-    </script>
+    
 </body>
 </html>
