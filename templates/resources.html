@@ -253,33 +253,78 @@
     }
     </style>
 
-    <script>
-    // دالة إظهار/إخفاء القائمة الجانبية
-    function toggleSidebar() {
-        console.log('تم النقر على زر القائمة');
-        const sidebar = document.querySelector('.sidebar');
-        
-        if (sidebar) {
-            sidebar.classList.toggle('active');
-        }
-    }
+   <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 
-    // إغلاق القائمة عند النقر على الروابط
-    document.addEventListener('DOMContentLoaded', function() {
-        console.log('صفحة الموارد محملة');
-        
-        const sidebarLinks = document.querySelectorAll('.sidebar-menu a');
-        sidebarLinks.forEach(link => {
-            link.addEventListener('click', function() {
-                if (window.innerWidth <= 992) {
-                    const sidebar = document.querySelector('.sidebar');
-                    if (sidebar) {
-                        sidebar.classList.remove('active');
-                    }
-                }
-            });
+<script>
+// دالة إظهار/إخفاء القائمة الجانبية - نسخة مبسطة
+function toggleSidebar() {
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.querySelector('.sidebar-overlay');
+    
+    if (sidebar && overlay) {
+        sidebar.classList.toggle('active');
+        overlay.style.display = sidebar.classList.contains('active') ? 'block' : 'none';
+    }
+}
+
+// تهيئة عند تحميل الصفحة
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('✅ صفحة الموارد محملة - JavaScript يعمل');
+    
+    // إغلاق القائمة عند النقر على الروابط (للجوال)
+    const sidebarLinks = document.querySelectorAll('.sidebar-menu a');
+    sidebarLinks.forEach(link => {
+        link.addEventListener('click', function() {
+            if (window.innerWidth <= 992) {
+                toggleSidebar();
+            }
         });
     });
-    </script>
+    
+    // إغلاق القائمة عند النقر على الطبقة الشفافة
+    const overlay = document.querySelector('.sidebar-overlay');
+    if (overlay) {
+        overlay.addEventListener('click', function() {
+            toggleSidebar();
+        });
+    }
+});
+
+// دالة البحث
+function searchResources() {
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    const resourceCards = document.querySelectorAll('.resource-card');
+    let visibleCount = 0;
+    
+    resourceCards.forEach(card => {
+        const text = card.textContent.toLowerCase();
+        if (text.includes(searchTerm)) {
+            card.style.display = 'block';
+            visibleCount++;
+        } else {
+            card.style.display = 'none';
+        }
+    });
+    
+    // تحديث الإحصائيات
+    const statsElement = document.getElementById('searchStats');
+    if (statsElement) {
+        statsElement.textContent = `عثرنا على ${visibleCount} نتيجة`;
+    }
+}
+
+// البحث أثناء الكتابة
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('keyup', function(event) {
+            if (event.key === 'Enter') {
+                searchResources();
+            }
+        });
+    }
+});
+</script>
+    
 </body>
 </html>
