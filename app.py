@@ -1492,6 +1492,93 @@ def debug_books_status():
             debug_info['error'] = str(e)
     
     return jsonify(debug_info)
+
+# =====================================================
+# 🔧 مسارات التصحيح والإصلاح
+# =====================================================
+
+@app.route('/debug-db')
+def debug_database():
+    """تصحيح قاعدة البيانات"""
+    debug_info = {
+        'render_environment': 'RENDER' in os.environ,
+        'current_directory': os.getcwd(),
+        'files_in_directory': os.listdir('.') if os.path.exists('.') else [],
+        'db_connection_test': None,
+        'tables': []
+    }
+    
+    try:
+        # اختبار الاتصال
+        conn = get_db_connection()
+        if conn:
+            cursor = conn.cursor()
+            
+            # التحقق من الجداول
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
+            tables = cursor.fetchall()
+            debug_info['tables'] = [table['name'] for table in tables]
+            
+            # اختبار بسيط
+            cursor.execute("SELECT 1 as test")
+            test_result = cursor.fetchone()
+            debug_info['db_connection_test'] = 'success' if test_result else 'failed'
+            
+            conn.close()
+        else:
+            debug_info['db_connection_test'] = 'connection_failed'
+            
+    except Exception as e:
+        debug_info['db_connection_test'] = f'error: {str(e)}'
+    
+    return jsonify(debug_info)
+
+@app.route('/recreate-db')
+def recreate_database():
+    """إعادة إنشاء قاعدة البيانات من الصفر"""
+    try:
+        print("🗑️ بدء إعادة إنشاء قاعدة البيانات...")
+        
+        conn = get_db_connection()
+        if conn:
+            cursor = conn.cursor()
+            
+            # حذف جميع الجداول
+            cursor.execute("DROP TABLE IF EXISTS resources")
+            cursor.execute("DROP TABLE IF EXISTS scientific_sources") 
+            cursor.execute("DROP TABLE IF EXISTS users")
+            cursor.execute("DROP TABLE IF EXISTS books")
+            cursor.execute("DROP TABLE IF EXISTS orders")
+            
+            conn.commit()
+            conn.close()
+            print("✅ تم حذف الجداول القديمة")
+        
+        # إعادة إنشاء البيانات
+        init_real_data()
+        
+        return '''
+        <html>
+            <body style="text-align: center; padding: 50px; font-family: Arial;">
+                <h1>✅ تم إعادة إنشاء قاعدة البيانات بنجاح!</h1>
+                <p>تم حذف وإعادة إنشاء جميع الجداول والبيانات من الصفر</p>
+                <a href="/debug-db">تحقق من قاعدة البيانات</a><br>
+                <a href="/api/resources">تحقق من الموارد</a><br>
+                <a href="/resources">اذهب إلى صفحة الموارد</a>
+            </body>
+        </html>
+        '''
+        
+    except Exception as e:
+        return f'''
+        <html>
+            <body style="text-align: center; padding: 50px; font-family: Arial;">
+                <h1>❌ خطأ في إعادة الإنشاء</h1>
+                <p>{str(e)}</p>
+            </body>
+        </html>
+        '''
+
 # =====================================================
 # تشغيل التطبيق
 # =====================================================
