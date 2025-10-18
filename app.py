@@ -11,22 +11,20 @@ app.secret_key = 'findemy-v2-secret-key-2024'
 
 # إعدادات قاعدة البيانات SQLite
 def get_db_connection():
-    """الاتصال بقاعدة البيانات SQLite - إصدار متوافق مع Render"""
+    """الاتصال بقاعدة البيانات - الإصدار النهائي المستقر"""
     try:
-        # على Render، استخدم المسار في المجلد الرئيسي بدلاً من /tmp/
+        # على Render، استخدم المسار المطلق
         if 'RENDER' in os.environ:
-            db_path = 'findemy.db'  # ⚠️ غير هذا من '/tmp/findemy.db'
-            # تأكد من وجود المجلد
-            os.makedirs(os.path.dirname(db_path), exist_ok=True)
+            db_path = '/opt/render/project/src/findemy.db'
         else:
             # للتطوير المحلي
-            if not os.path.exists('data'):
-                os.makedirs('data')
-            db_path = 'data/findemy.db'
-            
+            db_path = 'findemy.db'
+        
+        # إنشاء الاتصال
         conn = sqlite3.connect(db_path)
         conn.row_factory = sqlite3.Row
         return conn
+        
     except Exception as err:
         print(f"❌ خطأ في الاتصال بقاعدة البيانات: {err}")
         return None
@@ -1578,7 +1576,62 @@ def recreate_database():
             </body>
         </html>
         '''
-
+@app.route('/final-fix-db')
+def final_fix_database():
+    """إصلاح نهائي لقاعدة البيانات"""
+    try:
+        # مسار ثابت على Render
+        db_path = '/opt/render/project/src/findemy.db'
+        
+        # إنشاء اتصال مباشر
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        
+        # إنشاء جميع الجداول
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS resources (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                type TEXT NOT NULL,
+                university TEXT,
+                wilaya TEXT,
+                url TEXT NOT NULL,
+                description TEXT,
+                repository_link TEXT,
+                repository_name TEXT,
+                search_keywords TEXT
+            )
+        ''')
+        
+        # إدخال البيانات الحقيقية مباشرة
+        from werkzeug.security import generate_password_hash
+        
+        # إضافة مستخدم الأدمن
+        hashed_password = generate_password_hash('nelly2002')
+        cursor.execute('''
+            INSERT OR IGNORE INTO users (id, full_name, email, password_hash, role) 
+            VALUES (1, ?, ?, ?, ?)
+        ''', ('Nelly Create', 'belloutinihel@gmail.com', hashed_password, 'admin'))
+        
+        conn.commit()
+        conn.close()
+        
+        return '''
+        <html>
+            <body style="text-align: center; padding: 50px; font-family: Arial;">
+                <h1>✅ تم الإصلاح النهائي بنجاح!</h1>
+                <p>جاري إعادة التوجيه...</p>
+                <script>
+                    setTimeout(() => {
+                        window.location.href = '/resources';
+                    }, 2000);
+                </script>
+            </body>
+        </html>
+        '''
+        
+    except Exception as e:
+        return f'<h1>❌ خطأ: {str(e)}</h1>'
 # =====================================================
 # تشغيل التطبيق
 # =====================================================
