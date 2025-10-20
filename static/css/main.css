@@ -2070,3 +2070,67 @@ body {
     font-size: 1.1rem;
     opacity: 0.9;
 }
+
+
+
+
+
+
+
+/* ===== إصلاح ارتفاع أقسام البطل في الصفحات الأخرى فقط ===== */
+
+/* صفحات البطل الداخلية (الكتب، عن المنصة، المصادر، الموارد) */
+.page-hero,
+.books-hero {
+    padding: 60px 0 !important; /* تقليص من 100px-120px إلى 60px */
+    min-height: 40vh !important; /* ارتفاع معقول يظهر المحتوى */
+}
+
+.page-hero h1,
+.books-hero .hero-title {
+    font-size: 2.5rem !important; /* تصغير العناوين */
+    margin-bottom: 1rem !important;
+}
+
+.page-hero p,
+.books-hero .hero-description {
+    font-size: 1.1rem !important;
+    margin-bottom: 1.5rem !important;
+}
+
+/* تحسينات إضافية للمحتوى في الصفحات الأخرى */
+.page-hero-content {
+    padding: 15px 0;
+}
+
+/* تحسينات للاستجابة على الجوال */
+@media (max-width: 768px) {
+    .page-hero,
+    .books-hero {
+        padding: 50px 0 !important;
+        min-height: 35vh !important;
+    }
+    
+    .page-hero h1,
+    .books-hero .hero-title {
+        font-size: 2rem !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .page-hero,
+    .books-hero {
+        padding: 40px 0 !important;
+        min-height: 30vh !important;
+    }
+    
+    .page-hero h1,
+    .books-hero .hero-title {
+        font-size: 1.8rem !important;
+    }
+    
+    .page-hero p,
+    .books-hero .hero-description {
+        font-size: 1rem !important;
+    }
+}
