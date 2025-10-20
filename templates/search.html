@@ -55,59 +55,13 @@
                         <div class="main-search-form">
                             <div class="search-input-group">
                                 <i class="fas fa-search search-icon"></i>
-                                <input type="text" id="search-query" class="search-input" placeholder="ابحث في الكتب، المقالات، الأطروحات... (مثال: شبكات الاتصالات)" required>
+                                <input type="text" id="search-query" class="search-input" placeholder="ابحث في الكتب، المقالات، الأطروحات..." required>
                             </div>
                             <button type="submit" class="search-btn btn-primary">
                                 <i class="fas fa-search"></i> ابحث في جميع المستودعات
                             </button>
                         </div>
                     </form>
-                    
-                    <!-- معلومات سريعة عن المستودعات -->
-                    <div class="search-info">
-                        <p><i class="fas fa-info-circle"></i> سيتم البحث تلقائياً في: جامعة الجزائر 3، جامعة غيليزان، جامعة هواري بومدين</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- قسم المستودعات المتاحة -->
-        <section class="repositories-section">
-            <div class="container">
-                <h2><i class="fas fa-database"></i> المستودعات المتاحة للبحث</h2>
-                <div class="repositories-grid">
-                    <div class="repo-card">
-                        <div class="repo-icon">
-                            <i class="fas fa-university"></i>
-                        </div>
-                        <h3>جامعة الجزائر 3</h3>
-                        <p>المستودع الرقمي لجامعة الجزائر 3</p>
-                        <a href="https://dspace.univ-alger3.dz/jspui" target="_blank" class="repo-link">
-                            <i class="fas fa-external-link-alt"></i> زيارة المستودع
-                        </a>
-                    </div>
-                    
-                    <div class="repo-card">
-                        <div class="repo-icon">
-                            <i class="fas fa-university"></i>
-                        </div>
-                        <h3>جامعة غيليزان</h3>
-                        <p>المستودع الرقمي لجامعة غيليزان</p>
-                        <a href="http://dspace.univ-relizane.dz" target="_blank" class="repo-link">
-                            <i class="fas fa-external-link-alt"></i> زيارة المستودع
-                        </a>
-                    </div>
-                    
-                    <div class="repo-card">
-                        <div class="repo-icon">
-                            <i class="fas fa-university"></i>
-                        </div>
-                        <h3>جامعة هواري بومدين</h3>
-                        <p>المستودع الرقمي لجامعة هواري بومدين للعلوم والتكنولوجيا</p>
-                        <a href="https://dspace.usthb.dz" target="_blank" class="repo-link">
-                            <i class="fas fa-external-link-alt"></i> زيارة المستودع
-                        </a>
-                    </div>
                 </div>
             </div>
         </section>
@@ -221,106 +175,5 @@
             document.querySelector('.sidebar').classList.toggle('active');
         }
     </script>
-
-    <style>
-        /* تنسيق قسم المستودعات */
-        .repositories-section {
-            padding: 60px 0;
-            background: var(--gradient-light);
-        }
-
-        .repositories-section h2 {
-            text-align: center;
-            color: var(--dark-color);
-            margin-bottom: 40px;
-            font-size: 2.2rem;
-        }
-
-        .repositories-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
-            max-width: 1000px;
-            margin: 0 auto;
-        }
-
-        .repo-card {
-            background: var(--card-bg);
-            padding: 30px;
-            border-radius: 15px;
-            text-align: center;
-            box-shadow: 0 5px 20px rgba(139, 26, 59, 0.1);
-            border: 1px solid var(--border-color);
-            transition: all 0.3s ease;
-        }
-
-        .repo-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(139, 26, 59, 0.15);
-        }
-
-        .repo-icon {
-            width: 60px;
-            height: 60px;
-            background: var(--gradient-primary);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 20px;
-            color: var(--light-text);
-            font-size: 1.5rem;
-        }
-
-        .repo-card h3 {
-            color: var(--dark-color);
-            margin-bottom: 10px;
-            font-size: 1.3rem;
-        }
-
-        .repo-card p {
-            color: var(--text-color);
-            margin-bottom: 20px;
-            opacity: 0.8;
-        }
-
-        .repo-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 10px 20px;
-            background: var(--gradient-primary);
-            color: var(--light-text);
-            text-decoration: none;
-            border-radius: 8px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-
-        .repo-link:hover {
-            background: var(--gradient-secondary);
-            transform: translateY(-2px);
-        }
-
-        .search-info {
-            margin-top: 20px;
-            padding: 15px;
-            background: rgba(139, 26, 59, 0.1);
-            border-radius: 10px;
-            text-align: center;
-        }
-
-        .search-info p {
-            margin: 0;
-            color: var(--primary-color);
-            font-size: 0.9rem;
-        }
-
-        @media (max-width: 768px) {
-            .repositories-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
 </body>
 </html>
