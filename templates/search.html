@@ -16,9 +16,9 @@
     </div>
     <ul class="sidebar-menu">
         <li><a href="{{ url_for('home') }}"><i class="fas fa-home"></i> الرئيسية</a></li>
-        <li><a href="{{ url_for('resources') }}"><i class="fas fa-book"></i> الموارد</a></li>
-        <li><a href="{{ url_for('sources') }}"><i class="fas fa-database"></i> المصادر العلمية</a></li>
         <li><a href="{{ url_for('search') }}"><i class="fas fa-search"></i> البحث المتقدم</a></li>
+        <li><a href="{{ url_for('sources') }}"><i class="fas fa-database"></i> المصادر العلمية</a></li>
+        <li><a href="{{ url_for('resources') }}"><i class="fas fa-book"></i> الموارد</a></li>
         <li><a href="{{ url_for('books') }}"><i class="fas fa-exchange-alt"></i> الكتب المستعملة</a></li>
         <li><a href="{{ url_for('about') }}"><i class="fas fa-info-circle"></i> عن المنصة</a></li>
         
@@ -60,13 +60,18 @@
                         <div style="margin:12px 0; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
                             <select id="bridge-repo" class="search-input" style="padding:10px; border-radius:8px;">
                                 <option value="univ-alger3">جامعة الجزائر 3 — المستودع</option>
-                                <option value="univ-alger2">جامعة الجزائر 2 — المستودع</option>
                                 <option value="univ-relizane">جامعة غيليزان — المستودع</option>
-                                <option value="usthb">جامعة هواري بومدين — المكتبة</option>
+                                <option value="usthb">جامعة هواري بومدين — المستودع</option>
                             </select>
 
                             <button type="submit" class="search-btn btn-primary" title="فتح نتائج البحث في المستودع المختار">
                                 <i class="fas fa-search"></i> ابحث الآن
+                            </button>
+
+                            <!-- زر البحث في الكل -->
+                            <button type="button" class="search-btn" style="background: var(--secondary-color);" 
+                                    onclick="searchInAllRepositories()" title="فتح البحث في جميع المستودعات">
+                                <i class="fas fa-layer-group"></i> بحث في الكل
                             </button>
                         </div>
                     </form>
@@ -155,12 +160,11 @@
         // خريطة روابط البحث لكل مستودع
         let searchUrls = {
           "univ-alger3": "https://dspace.univ-alger3.dz/jspui/simple-search?query=",
-          "univ-alger2": "http://www.ddeposit.univ-alger2.dz:8080/xmlui/discover?query=",
           "univ-relizane": "http://dspace.univ-relizane.dz/home/simple-search?query=",
           "usthb": "https://dspace.usthb.dz/search?query="
         };
 
-        // دالة البحث
+        // دالة البحث في مستودع واحد
         function handleBridgeSearch(event) {
             event.preventDefault();
             const query = document.getElementById('bridge-query').value.trim();
@@ -172,6 +176,23 @@
             window.open(url, "_blank");
             
             return false;
+        }
+
+        // دالة البحث في جميع المستودعات
+        function searchInAllRepositories() {
+            const query = document.getElementById('bridge-query').value.trim();
+            if (!query) {
+                alert('يرجى إدخال كلمة البحث أولاً');
+                return;
+            }
+
+            const encodedQuery = encodeURIComponent(query);
+            
+            // فتح جميع المستودعات في نوافذ جديدة
+            Object.values(searchUrls).forEach(url => {
+                const fullUrl = url + encodedQuery;
+                window.open(fullUrl, '_blank');
+            });
         }
 
         function toggleSidebar() {
