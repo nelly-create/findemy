@@ -49,32 +49,65 @@
                 <h1><i class="fas fa-search"></i> البحث المتقدم</h1>
                 <p>محرك بحث ذكي يمكّنك من الوصول إلى الكتب، المقالات، والأطروحات من الجامعات الجزائرية والمستودعات الأكاديمية بسهولة ودقة.</p>
                 
-                <!-- نموذج البحث -->
+                <!-- نموذج البحث المبسط -->
                 <div class="search-form-container">
-                    <form id="bridge-search-form" onsubmit="return handleBridgeSearch(event)">
-                        <div class="search-input-group">
-                            <i class="fas fa-search search-icon"></i>
-                            <input type="text" id="bridge-query" class="search-input" placeholder="ابحث في الكتب، المقالات، الأطروحات... (مثال: شبكات الاتصالات)" required>
-                        </div>
-
-                        <div style="margin:12px 0; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-                            <select id="bridge-repo" class="search-input" style="padding:10px; border-radius:8px;">
-                                <option value="univ-alger3">جامعة الجزائر 3 — المستودع</option>
-                                <option value="univ-relizane">جامعة غيليزان — المستودع</option>
-                                <option value="usthb">جامعة هواري بومدين — المستودع</option>
-                            </select>
-
-                            <button type="submit" class="search-btn btn-primary" title="فتح نتائج البحث في المستودع المختار">
-                                <i class="fas fa-search"></i> ابحث الآن
-                            </button>
-
-                            <!-- زر البحث في الكل -->
-                            <button type="button" class="search-btn" style="background: var(--secondary-color);" 
-                                    onclick="searchInAllRepositories()" title="فتح البحث في جميع المستودعات">
-                                <i class="fas fa-layer-group"></i> بحث في الكل
+                    <form id="bridge-search-form" onsubmit="return handleSearch(event)">
+                        <div class="main-search-form">
+                            <div class="search-input-group">
+                                <i class="fas fa-search search-icon"></i>
+                                <input type="text" id="search-query" class="search-input" placeholder="ابحث في الكتب، المقالات، الأطروحات... (مثال: شبكات الاتصالات)" required>
+                            </div>
+                            <button type="submit" class="search-btn btn-primary">
+                                <i class="fas fa-search"></i> ابحث في جميع المستودعات
                             </button>
                         </div>
                     </form>
+                    
+                    <!-- معلومات سريعة عن المستودعات -->
+                    <div class="search-info">
+                        <p><i class="fas fa-info-circle"></i> سيتم البحث تلقائياً في: جامعة الجزائر 3، جامعة غيليزان، جامعة هواري بومدين</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- قسم المستودعات المتاحة -->
+        <section class="repositories-section">
+            <div class="container">
+                <h2><i class="fas fa-database"></i> المستودعات المتاحة للبحث</h2>
+                <div class="repositories-grid">
+                    <div class="repo-card">
+                        <div class="repo-icon">
+                            <i class="fas fa-university"></i>
+                        </div>
+                        <h3>جامعة الجزائر 3</h3>
+                        <p>المستودع الرقمي لجامعة الجزائر 3</p>
+                        <a href="https://dspace.univ-alger3.dz/jspui" target="_blank" class="repo-link">
+                            <i class="fas fa-external-link-alt"></i> زيارة المستودع
+                        </a>
+                    </div>
+                    
+                    <div class="repo-card">
+                        <div class="repo-icon">
+                            <i class="fas fa-university"></i>
+                        </div>
+                        <h3>جامعة غيليزان</h3>
+                        <p>المستودع الرقمي لجامعة غيليزان</p>
+                        <a href="http://dspace.univ-relizane.dz" target="_blank" class="repo-link">
+                            <i class="fas fa-external-link-alt"></i> زيارة المستودع
+                        </a>
+                    </div>
+                    
+                    <div class="repo-card">
+                        <div class="repo-icon">
+                            <i class="fas fa-university"></i>
+                        </div>
+                        <h3>جامعة هواري بومدين</h3>
+                        <p>المستودع الرقمي لجامعة هواري بومدين للعلوم والتكنولوجيا</p>
+                        <a href="https://dspace.usthb.dz" target="_blank" class="repo-link">
+                            <i class="fas fa-external-link-alt"></i> زيارة المستودع
+                        </a>
+                    </div>
                 </div>
             </div>
         </section>
@@ -158,32 +191,19 @@
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
     <script>
         // خريطة روابط البحث لكل مستودع
-        let searchUrls = {
-          "univ-alger3": "https://dspace.univ-alger3.dz/jspui/simple-search?query=",
-          "univ-relizane": "http://dspace.univ-relizane.dz/home/simple-search?query=",
-          "usthb": "https://dspace.usthb.dz/search?query="
+        const searchUrls = {
+            "univ-alger3": "https://dspace.univ-alger3.dz/jspui/simple-search?query=",
+            "univ-relizane": "http://dspace.univ-relizane.dz/home/simple-search?query=",
+            "usthb": "https://dspace.usthb.dz/search?query="
         };
 
-        // دالة البحث في مستودع واحد
-        function handleBridgeSearch(event) {
-            event.preventDefault();
-            const query = document.getElementById('bridge-query').value.trim();
-            const selectedRepo = document.getElementById('bridge-repo').value;
-            if (!query) return false;
-
-            const encodedQuery = encodeURIComponent(query);
-            const url = searchUrls[selectedRepo] + encodedQuery;
-            window.open(url, "_blank");
-            
-            return false;
-        }
-
         // دالة البحث في جميع المستودعات
-        function searchInAllRepositories() {
-            const query = document.getElementById('bridge-query').value.trim();
+        function handleSearch(event) {
+            event.preventDefault();
+            const query = document.getElementById('search-query').value.trim();
             if (!query) {
                 alert('يرجى إدخال كلمة البحث أولاً');
-                return;
+                return false;
             }
 
             const encodedQuery = encodeURIComponent(query);
@@ -193,11 +213,114 @@
                 const fullUrl = url + encodedQuery;
                 window.open(fullUrl, '_blank');
             });
+            
+            return false;
         }
 
         function toggleSidebar() {
             document.querySelector('.sidebar').classList.toggle('active');
         }
     </script>
+
+    <style>
+        /* تنسيق قسم المستودعات */
+        .repositories-section {
+            padding: 60px 0;
+            background: var(--gradient-light);
+        }
+
+        .repositories-section h2 {
+            text-align: center;
+            color: var(--dark-color);
+            margin-bottom: 40px;
+            font-size: 2.2rem;
+        }
+
+        .repositories-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .repo-card {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(139, 26, 59, 0.1);
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .repo-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(139, 26, 59, 0.15);
+        }
+
+        .repo-icon {
+            width: 60px;
+            height: 60px;
+            background: var(--gradient-primary);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            color: var(--light-text);
+            font-size: 1.5rem;
+        }
+
+        .repo-card h3 {
+            color: var(--dark-color);
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+        }
+
+        .repo-card p {
+            color: var(--text-color);
+            margin-bottom: 20px;
+            opacity: 0.8;
+        }
+
+        .repo-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: var(--gradient-primary);
+            color: var(--light-text);
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .repo-link:hover {
+            background: var(--gradient-secondary);
+            transform: translateY(-2px);
+        }
+
+        .search-info {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(139, 26, 59, 0.1);
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .search-info p {
+            margin: 0;
+            color: var(--primary-color);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .repositories-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </body>
 </html>
